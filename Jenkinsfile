@@ -3,17 +3,17 @@ pipeline {
     stages {
         stage('Build') { 
             steps {
-                // NOOP
+                sh "make ckeck"
             }
         }
         stage('Test') { 
             steps {
-                // NOOP
+                echo "NOOP"
             }
         }
         stage('Deploy') { 
             steps {
-                // NOOP
+                echo "NOOP"
             }
         }
     }
