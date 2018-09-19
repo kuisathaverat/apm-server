@@ -110,7 +110,7 @@ pipeline {
         }
         
         stage('Parallel Stage'){
-          failFast false
+            failFast false
             parallel {
               
               /**
@@ -309,7 +309,7 @@ pipeline {
               environment name: 'deploy', value: 'true' 
             }
             steps {
-              nsiColor('xterm') {
+              ansiColor('xterm') {
                 dir("${BASE_DIR}"){
                   deleteDir()
                   unstash 'source'
