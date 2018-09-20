@@ -184,10 +184,10 @@ pipeline {
                           go get github.com/axw/gocov/...
                           go get github.com/AlekSi/gocov-xml
                           
-                          go test -race \${GOPACKAGES} -v 2>&1 > test-report.out 
-                          cat test-report.out | go-junit-report > build/TEST-report.xml
-                          cat test-report.out | gocov-html > build/coverage-report.html
-                          cat test-report.out | gocov-xml > build/coverage-report.xml
+                          go test -race \${GOPACKAGES} -v -coverprofile=test-report.out 
+                          cat test-report.out | go-junit-report > build/junit-report.xml
+                          gocov convert test-report.out | gocov-html > build/coverage-report.html
+                          gocov convert test-report.out | gocov-xml > build/coverage-report.xml
 
                           make coverage-report
                           """
@@ -231,7 +231,7 @@ pipeline {
                           onlyIfSuccessful: false)
                         junit(allowEmptyResults: true, 
                           keepLongStdio: true, 
-                          testResults: "${BASE_DIR}/build/**/TEST-*.xml")
+                          testResults: "${BASE_DIR}/build/**/junit-report.xml")
                       }
                     }
               }
