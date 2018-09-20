@@ -70,8 +70,8 @@ pipeline {
               }
               post { 
                 always {
-                  googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
-                  googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
+                  //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
+                  //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
                   junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
                 }
               }
@@ -102,8 +102,8 @@ pipeline {
               }
               post { 
                 always {
-                  googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
-                  googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
+                  //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
+                  //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
                   junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
                 }
               }
