@@ -13,6 +13,33 @@ pipeline {
     
     stages {
       
+      stage('Checkout') { 
+          agent { label 'linux' }
+          environment {
+            PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
+            GOPATH = "${env.WORKSPACE}"
+          }
+          
+          steps {
+              ansiColor('xterm') {
+                  sh "export"
+                  echo "${PATH}:${HOME}/go/bin/:${WORKSPACE}/bin"
+                  //script {
+                  //}
+                  dir("${BASE_DIR}"){
+                    deleteDir()
+                    checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
+                      doGenerateSubmoduleConfigurations: false, 
+                      extensions: [], 
+                      submoduleCfg: [], 
+                      userRemoteConfigs: [[credentialsId: "${GIT_CREDENTIALS}", 
+                      url: "${GIT_REPO_URL}"]]])
+                    stash allowEmpty: true, name: 'source'
+                  }
+              }
+          }
+      }
+      
       /**
       Basic build on a linux environment.
       */
