@@ -7,8 +7,12 @@ pipeline {
     }
     parameters {
       string(name: 'branch_specifier', defaultValue: "refs/heads/master", description: "the Git branch specifier to build (<branchName>, <tagName>, <commitId>, etc.)")
+      booleanParam(name: 'linux_ci', defaultValue: false, description: 'Enable Linux build')
       booleanParam(name: 'windows_cI', defaultValue: false, description: 'Enable Windows CI')
-      booleanParam(name: 'deploy', defaultValue: false, description: 'Enable deploy')
+      booleanParam(name: 'test_ci', defaultValue: false, description: 'Enable test')
+      booleanParam(name: 'bench_ci', defaultValue: false, description: 'Enable benchmarks')
+      booleanParam(name: 'doc_ci', defaultValue: false, description: 'Enable build documentation')
+      booleanParam(name: 'deploy_ci', defaultValue: false, description: 'Enable deploy')
     }
     
     stages {
@@ -84,6 +88,10 @@ pipeline {
         stage('CI-linux') { 
             agent { label 'linux' }
             
+            when { 
+              beforeAgent true
+              environment name: 'linux_ci', value: 'true' 
+            }
             steps {
               ansiColor('xterm') {
                   dir("${BASE_DIR}"){  
@@ -152,6 +160,10 @@ pipeline {
                     GOPATH = "${env.WORKSPACE}"
                   }
                   
+                  when { 
+                    beforeAgent true
+                    environment name: 'test_ci', value: 'true' 
+                  }
                   steps {
                     ansiColor('xterm') {
                         dir("${BASE_DIR}"){
@@ -235,6 +247,10 @@ pipeline {
                     GOPATH = "${env.WORKSPACE}"
                   }
                   
+                  when { 
+                    beforeAgent true
+                    environment name: 'bench_ci', value: 'true' 
+                  }
                   steps {
                     ansiColor('xterm') {
                         dir("${BASE_DIR}"){  
@@ -318,6 +334,10 @@ pipeline {
                     GOPATH = "${env.WORKSPACE}"
                   }
                   
+                  when { 
+                    beforeAgent true
+                    environment name: 'doc_ci', value: 'true' 
+                  }
                   steps {
                     ansiColor('xterm') {
                         dir("${BASE_DIR}"){  
@@ -368,7 +388,7 @@ pipeline {
             
             when { 
               beforeAgent true
-              environment name: 'deploy', value: 'true' 
+              environment name: 'deploy_ci', value: 'true' 
             }
             steps {
               ansiColor('xterm') {
