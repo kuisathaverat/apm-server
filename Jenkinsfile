@@ -16,6 +16,7 @@ pipeline {
       /**
       Basic build on a linux environment.
       */
+      /*
         stage('Build') { 
             agent { label 'linux' }
             environment {
@@ -27,9 +28,8 @@ pipeline {
                 ansiColor('xterm') {
                     sh "export"
                     echo "${PATH}:${HOME}/go/bin/:${WORKSPACE}/bin"
-                    /*
-                    script {
-                    }*/
+                    //script {
+                    //}
                     dir("${BASE_DIR}"){
                       deleteDir()
                       checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
@@ -48,6 +48,7 @@ pipeline {
                 }
             }
         }
+        */
         
         /**
         Build and run tests on a linux environment.
@@ -135,9 +136,20 @@ pipeline {
                           make testsuite
                           
                           export GOPACKAGES=\$(go list github.com/elastic/apm-server/...| grep -v /vendor/ | grep -v /scripts/cmd/)
-                          go get -u github.com/jstemmer/go-junit-report
-                          go test -race \${GOPACKAGES} -v 2>&1 | go-junit-report > build/TEST-report.xml
                           
+                          go get -u github.com/jstemmer/go-junit-report
+                          
+                          go get github.com/axw/gocov/gocov
+                          go get -u gopkg.in/matm/v1/gocov-html
+                          
+                          go get github.com/axw/gocov/...
+                          go get github.com/AlekSi/gocov-xml
+                          
+                          go test -race \${GOPACKAGES} -v 2>&1 > test-report.out 
+                          cat test-report.out | go-junit-report > build/TEST-report.xml
+                          cat test-report.out | gocov-html > build/coverage-report.html
+                          cat test-report.out | gocov-xml > build/coverage-report.xml
+
                           make coverage-report
                           """
                         }
@@ -150,8 +162,31 @@ pipeline {
                           keepAll: true,
                           reportDir: "${BASE_DIR}/build/coverage", 
                           reportFiles: 'full.html', 
-                          reportName: 'coverage', 
+                          reportName: 'coverage HTML v1', 
                           reportTitles: 'Coverage'])
+                        publishHTML(target: [
+                            allowMissing: true, 
+                            keepAll: true,
+                            reportDir: "${BASE_DIR}/build", 
+                            reportFiles: 'coverage-report.html', 
+                            reportName: 'coverage HTML v2', 
+                            reportTitles: 'Coverage'])
+                        publishCoverage(adapters: [
+                          coberturaAdapter('${BASE_DIR}/build/coverage-report.xml')], 
+                          sourceFileResolver: sourceFiles('NEVER_STORE'))
+                        cobertura(autoUpdateHealth: false, 
+                          autoUpdateStability: false, 
+                          coberturaReportFile: '**/coverage-report.xml', 
+                          conditionalCoverageTargets: '70, 0, 0', 
+                          failNoReports: false, 
+                          failUnhealthy: false, 
+                          failUnstable: false, 
+                          lineCoverageTargets: '80, 0, 0', 
+                          maxNumberOfBuilds: 0, 
+                          methodCoverageTargets: '80, 0, 0', 
+                          onlyStable: false, 
+                          sourceEncoding: 'ASCII', 
+                          zoomCoverageChart: false)
                         archiveArtifacts(allowEmptyArchive: true, 
                           artifacts: "${BASE_DIR}/build/coverage/**/*,${BASE_DIR}/build/system-tests/**/*,${BASE_DIR}/build/TEST-*.out,${BASE_DIR}/build/TEST-*.xml", 
                           onlyIfSuccessful: false)
