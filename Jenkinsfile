@@ -385,6 +385,7 @@ pipeline {
             }
             post {
               success {
+                echo "Archive packages"
                 /** TODO check if it is better storing in snapshots */
                 //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}/build/distributions/", pattern: '${BASE_DIR}/build/distributions//**/*', sharedPublicly: true, showInline: true
               }
