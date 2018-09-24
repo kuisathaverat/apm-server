@@ -86,13 +86,6 @@ pipeline {
                       }
                     }
                   }
-                  post { 
-                    always {
-                      //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
-                      //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
-                      junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
-                    }
-                  }
             }
             
             /**
@@ -116,13 +109,6 @@ pipeline {
                           --args "-NonInteractive -ExecutionPolicy ByPass -File" `
                           ".\\src\\github.com\\elastic\\apm-server\\script\\jenkins\\ci.ps1"'''
                       }
-                    }
-                  }
-                  post { 
-                    always {
-                      //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
-                      //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
-                      junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
                     }
                   }
             }
@@ -211,14 +197,17 @@ pipeline {
                           onlyStable: false, 
                           sourceEncoding: 'ASCII', 
                           zoomCoverageChart: false)
-                        zip(zipFile: coverage-files.zip, archive: true, path: "${BASE_DIR}/build/coverage")
-                        zip(zipFile: system-tests-files.zip, archive: true, path: "${BASE_DIR}/build/system-tests")
+                        zip(zipFile: "coverage-files.zip", archive: true, path: "${BASE_DIR}/build/coverage")
+                        zip(zipFile: "system-tests-files.zip", archive: true, path: "${BASE_DIR}/build/system-tests")
                         archiveArtifacts(allowEmptyArchive: true, 
                           artifacts: "${BASE_DIR}/build/TEST-*.out,${BASE_DIR}/build/TEST-*.xml", 
                           onlyIfSuccessful: false)
                         junit(allowEmptyResults: true, 
                           keepLongStdio: true, 
                           testResults: "${BASE_DIR}/build/junit-report.xml")
+                        //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
+                        //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
+                        //junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
                       }
                     }
               }
