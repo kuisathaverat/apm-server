@@ -18,6 +18,7 @@ pipeline {
       booleanParam(name: 'linux_ci', defaultValue: false, description: 'Enable Linux build')
       booleanParam(name: 'windows_cI', defaultValue: false, description: 'Enable Windows CI')
       booleanParam(name: 'test_ci', defaultValue: false, description: 'Enable test')
+      booleanParam(name: 'integration_test_ci', defaultValue: false, description: 'Enable run integgration test')
       booleanParam(name: 'bench_ci', defaultValue: false, description: 'Enable benchmarks')
       booleanParam(name: 'doc_ci', defaultValue: false, description: 'Enable build documentation')
       booleanParam(name: 'deploy_ci', defaultValue: false, description: 'Enable deploy')
@@ -54,73 +55,79 @@ pipeline {
               }
           }
       }
-        
-        /**
-        Build and run tests on a linux environment.
-        Finally archive the results.
-        */
-        stage('CI-linux') { 
-            agent { label 'linux' }
+      
+      stage('Parallel Tests'){
+          failFast true
+          parallel {
             
-            when { 
-              beforeAgent true
-              environment name: 'linux_ci', value: 'true' 
-            }
-            steps {
-              ansiColor('xterm') {
-                  dir("${BASE_DIR}"){  
-                    deleteDir()
-                    unstash 'source'
-                    sh """
-                    #!${job_shell} 
-                    ./script/jenkins/ci.sh
-                    """
+            /**
+            Build and run tests on a linux environment.
+            Finally archive the results.
+            */
+            stage('CI-linux') { 
+                agent { label 'linux' }
+                
+                when { 
+                  beforeAgent true
+                  environment name: 'linux_ci', value: 'true' 
+                }
+                steps {
+                  ansiColor('xterm') {
+                      dir("${BASE_DIR}"){  
+                        deleteDir()
+                        unstash 'source'
+                        sh """
+                        #!${job_shell} 
+                        ./script/jenkins/ci.sh
+                        """
+                      }
+                    }
                   }
+                  post { 
+                    always {
+                      //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
+                      //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
+                      junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
+                    }
+                  }
+            }
+            
+            /**
+            Build and run tests on a windows environment.
+            Finally archive the results.
+            */
+            stage('CI-windows') { 
+                agent { label 'windows' }
+                
+                when { 
+                  beforeAgent true
+                  environment name: 'windows_ci', value: 'true' 
                 }
-              }
-              post { 
-                always {
-                  //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
-                  //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
-                  junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
-                }
-              }
+                steps {
+                  ansiColor('xterm') {
+                      dir("${BASE_DIR}"){  
+                        deleteDir()
+                        unstash 'source'
+                        powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
+                          --program powershell.exe `
+                          --args "-NonInteractive -ExecutionPolicy ByPass -File" `
+                          ".\\src\\github.com\\elastic\\apm-server\\script\\jenkins\\ci.ps1"'''
+                      }
+                    }
+                  }
+                  post { 
+                    always {
+                      //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
+                      //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
+                      junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
+                    }
+                  }
+            }
+          } 
         }
         
-        /**
-        Build and run tests on a windows environment.
-        Finally archive the results.
-        */
-        stage('CI-windows') { 
-            agent { label 'windows' }
-            
-            when { 
-              beforeAgent true
-              environment name: 'windows_ci', value: 'true' 
-            }
-            steps {
-              ansiColor('xterm') {
-                  dir("${BASE_DIR}"){  
-                    deleteDir()
-                    unstash 'source'
-                    powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
-                      --program powershell.exe `
-                      --args "-NonInteractive -ExecutionPolicy ByPass -File" `
-                      ".\\src\\github.com\\elastic\\apm-server\\script\\jenkins\\ci.ps1"'''
-                  }
-                }
-              }
-              post { 
-                always {
-                  //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
-                  //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
-                  junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
-                }
-              }
-        }
-        
-        stage('Parallel Stage'){
-            failFast false
+        stage('Parallel Tests'){
+            failFast true
             parallel {
               
               /**
@@ -210,6 +217,25 @@ pipeline {
                     }
               }
               
+              stage('Integration test') { 
+                  agent { label 'linux' }
+                  
+                  when { 
+                    beforeAgent true
+                    environment name: 'integration_test_ci', value: 'true' 
+                  }
+                  steps {
+                    ansiColor('xterm') {
+                      //./scripts/compose.py start master --apm-server-build=https://github.com/elastic/apm-server.git@v2 --force-build
+                      dir("${BASE_DIR}"){
+                        deleteDir()
+                        unstash 'source'
+                        echo "NOOP"
+                      }
+                    }  
+                  }
+              }
+              
               /**
               Runs benchmarks on the current version and compare it with the previous ones.
               Finally archive the results.
@@ -232,9 +258,9 @@ pipeline {
                           unstash 'source'
                           copyArtifacts filter: 'bench-last.txt', fingerprintArtifacts: true, optional: true, projectName: "${JOB_NAME}", selector: lastCompleted()
                           sh """
-                          pwd
                           go get -u golang.org/x/tools/cmd/benchcmp
                           make bench > new.txt
+                          [ -f new.txt ] && cat new.txt
                           [ -f bench-last.txt ] && benchcmp bench-last.txt new.txt > bench-diff.txt 
                           [ -f bench-last.txt ] && mv bench-last.txt bench-old.txt
                           mv new.txt bench-last.txt
@@ -298,40 +324,6 @@ pipeline {
               }*/
               
               /**
-              Build the documentation and archive it.
-              Finally archive the results.
-              */
-              stage('Documentation') { 
-                  agent { label 'linux' }
-                  environment {
-                    PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
-                    GOPATH = "${env.WORKSPACE}"
-                  }
-                  
-                  when { 
-                    beforeAgent true
-                    environment name: 'doc_ci', value: 'true' 
-                  }
-                  steps {
-                    ansiColor('xterm') {
-                        dir("${BASE_DIR}"){  
-                          deleteDir()
-                          unstash 'source'
-                          sh """
-                          #!
-                          make docs
-                          """
-                        }
-                      }
-                    }
-                    post{
-                      always {
-                        archiveArtifacts allowEmptyArchive: true, artifacts: "${BASE_DIR}/build/html_docs/**/*", onlyIfSuccessful: false
-                      }
-                    }
-              }
-              
-              /**
               Checks if kibana objects are updated.
               */
               /*
@@ -352,6 +344,40 @@ pipeline {
                     }
               }*/
             }
+        }
+        
+        /**
+        Build the documentation and archive it.
+        Finally archive the results.
+        */
+        stage('Documentation') { 
+            agent { label 'linux' }
+            environment {
+              PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
+              GOPATH = "${env.WORKSPACE}"
+            }
+            
+            when { 
+              beforeAgent true
+              environment name: 'doc_ci', value: 'true' 
+            }
+            steps {
+              ansiColor('xterm') {
+                  dir("${BASE_DIR}"){  
+                    deleteDir()
+                    unstash 'source'
+                    sh """
+                    #!
+                    make docs
+                    """
+                  }
+                }
+              }
+              post{
+                always {
+                  archiveArtifacts allowEmptyArchive: true, artifacts: "${BASE_DIR}/build/html_docs/**/*", onlyIfSuccessful: false
+                }
+              }
         }
         
         /**
