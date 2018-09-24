@@ -168,10 +168,11 @@ pipeline {
                           go get github.com/axw/gocov/...
                           go get github.com/AlekSi/gocov-xml
                           
-                          go test -race \${GOPACKAGES} -v -coverprofile=test-report.out 
-                          cat test-report.out | go-junit-report > build/junit-report.xml
-                          gocov convert test-report.out | gocov-html > build/coverage-report.html
-                          gocov convert test-report.out | gocov-xml > build/coverage-report.xml
+                          export OUT_FILE="build/test-report.out"
+                          go test -race \${GOPACKAGES} -v -coverprofile=\${OUT_FILE} 
+                          cat \${OUT_FILE} | go-junit-report > build/junit-report.xml
+                          gocov convert \${OUT_FILE} | gocov-html > build/coverage-report.html
+                          gocov convert \${OUT_FILE} | gocov-xml > build/coverage-report.xml
 
                           make coverage-report
                           """
@@ -195,11 +196,11 @@ pipeline {
                             reportName: 'coverage HTML v2', 
                             reportTitles: 'Coverage'])
                         publishCoverage(adapters: [
-                          coberturaAdapter('${BASE_DIR}/build/coverage-report.xml')], 
+                          coberturaAdapter("${BASE_DIR}/build/coverage-report.xml")], 
                           sourceFileResolver: sourceFiles('NEVER_STORE'))
                         cobertura(autoUpdateHealth: false, 
                           autoUpdateStability: false, 
-                          coberturaReportFile: '**/coverage-report.xml', 
+                          coberturaReportFile: "${BASE_DIR}/build/coverage-report.xml", 
                           conditionalCoverageTargets: '70, 0, 0', 
                           failNoReports: false, 
                           failUnhealthy: false, 
@@ -217,7 +218,7 @@ pipeline {
                           onlyIfSuccessful: false)
                         junit(allowEmptyResults: true, 
                           keepLongStdio: true, 
-                          testResults: "${BASE_DIR}/build/**/junit-report.xml")
+                          testResults: "${BASE_DIR}/build/junit-report.xml")
                       }
                     }
               }
