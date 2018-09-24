@@ -212,6 +212,7 @@ pipeline {
                         //junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
                         script { //JENKINS-44078
                           zip(zipFile: "coverage-files.zip", archive: true, dir: "${BASE_DIR}/build/coverage")
+                          sh "rm ${BASE_DIR}/build/system-tests/last_run" //a symbolic link
                           zip(zipFile: "system-tests-files.zip", archive: true, dir: "${BASE_DIR}/build/system-tests")
                         }
                       }
