@@ -43,8 +43,8 @@ pipeline {
                   echo "${PATH}:${HOME}/go/bin/:${WORKSPACE}/bin"
                   //script {
                   //}
-                  dir("${BASE_DIR}"){
-                    deleteDir()
+                  deleteDir()
+                  dir("${BASE_DIR}"){      
                     checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
                       doGenerateSubmoduleConfigurations: false, 
                       extensions: [], 
@@ -77,8 +77,8 @@ pipeline {
                 }
                 steps {
                   ansiColor('xterm') {
+                      deleteDir()
                       dir("${BASE_DIR}"){  
-                        deleteDir()
                         unstash 'source'
                         sh """#!${job_shell}
                         ./script/jenkins/intake.sh
@@ -101,8 +101,8 @@ pipeline {
                 }
                 steps {
                   ansiColor('xterm') {
-                      dir("${BASE_DIR}"){  
-                        deleteDir()
+                      deleteDir()
+                      dir("${BASE_DIR}"){    
                         unstash 'source'
                         sh """#!${job_shell}
                         ./script/jenkins/linux-build.sh
@@ -125,8 +125,8 @@ pipeline {
                 }
                 steps {
                   ansiColor('xterm') {
+                      deleteDir()
                       dir("${BASE_DIR}"){  
-                        deleteDir()
                         unstash 'source'
                         powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
                           --program powershell.exe `
@@ -160,8 +160,8 @@ pipeline {
                   }
                   steps {
                     ansiColor('xterm') {
+                        deleteDir()
                         dir("${BASE_DIR}"){
-                          deleteDir()
                           unstash 'source'
                           sh """#!${job_shell}
                           ./script/jenkins/linux-test.sh
@@ -210,9 +210,11 @@ pipeline {
                         //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
                         //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
                         //junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
+                        tar(file: "system-tests-files.tgz", archive: true, dir: "${BASE_DIR}/build/system-tests", pathPrefix: "${BASE_DIR}/build/system-tests")
                         script { //JENKINS-44078
+                          sh "mkdir -p ${BASE_DIR}/build/coverage ${BASE_DIR}/build/system-tests"                          
+                          sh "rm ${BASE_DIR}/build/system-tests/last_run || exit 0" //a symbolic link
                           zip(zipFile: "coverage-files.zip", archive: true, dir: "${BASE_DIR}/build/coverage")
-                          sh "rm ${BASE_DIR}/build/system-tests/last_run" //a symbolic link
                           zip(zipFile: "system-tests-files.zip", archive: true, dir: "${BASE_DIR}/build/system-tests")
                         }
                       }
@@ -232,8 +234,8 @@ pipeline {
                   }
                   steps {
                     ansiColor('xterm') {
+                        deleteDir()
                         dir("${BASE_DIR}"){  
-                          deleteDir()
                           unstash 'source'
                           powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
                             --program powershell.exe `
@@ -256,9 +258,9 @@ pipeline {
                   }
                   steps {
                     ansiColor('xterm') {
+                      deleteDir()
                       //./scripts/compose.py start master --apm-server-build=https://github.com/elastic/apm-server.git@v2 --force-build
                       dir("${BASE_DIR}"){
-                        deleteDir()
                         unstash 'source'
                         echo "NOOP"
                       }
@@ -283,8 +285,8 @@ pipeline {
                   }
                   steps {
                     ansiColor('xterm') {
+                        deleteDir()
                         dir("${BASE_DIR}"){  
-                          deleteDir()
                           unstash 'source'
                           copyArtifacts filter: 'bench-last.txt', fingerprintArtifacts: true, optional: true, projectName: "${JOB_NAME}", selector: lastCompleted()
                           sh """#!${job_shell}
@@ -315,8 +317,8 @@ pipeline {
                   
                   steps {
                     ansiColor('xterm') {
+                        deleteDir()
                         dir("${BASE_DIR}"){
-                          deleteDir()
                           unstash 'source'
                           sh """
                           #!
@@ -347,8 +349,8 @@ pipeline {
             }
             steps {
               ansiColor('xterm') {
+                  deleteDir()
                   dir("${BASE_DIR}"){  
-                    deleteDir()
                     unstash 'source'
                     sh """#!${job_shell}
                     make docs
@@ -374,8 +376,8 @@ pipeline {
             }
             steps {
               ansiColor('xterm') {
+                deleteDir()
                 dir("${BASE_DIR}"){
-                  deleteDir()
                   unstash 'source'
                   sh """#!${job_shell}
                   ./_beats/dev-tools/jenkins_release.sh
@@ -404,8 +406,8 @@ pipeline {
             }
             steps {
               ansiColor('xterm') {
+                deleteDir()
                 dir("${BASE_DIR}"){
-                  deleteDir()
                   unstash 'source'
                   echo "NOOP"
                 }
@@ -425,8 +427,8 @@ pipeline {
             }
             steps {
               ansiColor('xterm') {
+                  deleteDir()
                   dir("${BASE_DIR}"){  
-                    deleteDir()
                     unstash 'source'
                     sh """#!${job_shell} 
                     ./script/jenkins/sync.sh
