@@ -210,8 +210,10 @@ pipeline {
                           onlyStable: false, 
                           sourceEncoding: 'ASCII', 
                           zoomCoverageChart: false)
+                        zip(zipFile: coverage-files.zip, archive: true, path: "${BASE_DIR}/build/coverage")
+                        zip(zipFile: system-tests-files.zip, archive: true, path: "${BASE_DIR}/build/system-tests")
                         archiveArtifacts(allowEmptyArchive: true, 
-                          artifacts: "${BASE_DIR}/build/coverage/**/*,${BASE_DIR}/build/system-tests/**/*,${BASE_DIR}/build/TEST-*.out,${BASE_DIR}/build/TEST-*.xml", 
+                          artifacts: "${BASE_DIR}/build/TEST-*.out,${BASE_DIR}/build/TEST-*.xml", 
                           onlyIfSuccessful: false)
                         junit(allowEmptyResults: true, 
                           keepLongStdio: true, 
@@ -220,6 +222,9 @@ pipeline {
                     }
               }
               
+              /**
+              TODO run integration test with the commit version.
+              */
               stage('Integration test') { 
                   agent { label 'linux' }
                   
@@ -377,8 +382,8 @@ pipeline {
                 }
               }
               post{
-                always {
-                  archiveArtifacts allowEmptyArchive: true, artifacts: "${BASE_DIR}/build/html_docs/**/*", onlyIfSuccessful: false
+                success {
+                  zip(zipFile: doc-files.zip, archive: true, path: "${BASE_DIR}/build/html_docs")
                 }
               }
         }
