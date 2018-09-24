@@ -22,6 +22,7 @@ pipeline {
       booleanParam(name: 'bench_ci', defaultValue: false, description: 'Enable benchmarks')
       booleanParam(name: 'doc_ci', defaultValue: false, description: 'Enable build documentation')
       booleanParam(name: 'deploy_ci', defaultValue: false, description: 'Enable deploy')
+      booleanParam(name: 'SNAPSHOT', defaultValue: false, description: 'Build snapshot packages (defaults to true)')
     }
     
     stages {
@@ -61,10 +62,37 @@ pipeline {
           parallel {
             
             /**
+            Updating generated files for Beat.
+            Checks the GO environment.
+            Checks the Python environment.
+            Checks YAML files are generated. 
+            Validate that all updates were committed.
+            */
+            stage('Intake') { 
+                agent { label 'linux' }
+                
+                when { 
+                  beforeAgent true
+                  branch 'master' 
+                }
+                steps {
+                  ansiColor('xterm') {
+                      dir("${BASE_DIR}"){  
+                        deleteDir()
+                        unstash 'source'
+                        sh """#!${job_shell}
+                        ./script/jenkins/intake.sh
+                        """
+                      }
+                    }
+                  }
+            }
+            
+            /**
             Build and run tests on a linux environment.
             Finally archive the results.
             */
-            stage('CI-linux') { 
+            stage('linux build') { 
                 agent { label 'linux' }
                 
                 when { 
@@ -76,12 +104,8 @@ pipeline {
                       dir("${BASE_DIR}"){  
                         deleteDir()
                         unstash 'source'
-                        sh """
-                        #!${job_shell} 
-                        set -euox pipefail
-                        source ./_beats/dev-tools/common.bash
-                        jenkins_setup
-                        make
+                        sh """#!${job_shell}
+                        ./script/jenkins/linux-build.sh
                         """
                       }
                     }
@@ -92,7 +116,7 @@ pipeline {
             Build and run tests on a windows environment.
             Finally archive the results.
             */
-            stage('CI-windows') { 
+            stage('windows build') { 
                 agent { label 'windows' }
                 
                 when { 
@@ -107,7 +131,7 @@ pipeline {
                         powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
                           --program powershell.exe `
                           --args "-NonInteractive -ExecutionPolicy ByPass -File" `
-                          ".\\src\\github.com\\elastic\\apm-server\\script\\jenkins\\ci.ps1"'''
+                          ".\\script\\jenkins\\windows-build.ps1"'''
                       }
                     }
                   }
@@ -123,7 +147,7 @@ pipeline {
               Runs unit test, then generate coverage and unit test reports.
               Finally archive the results.
               */
-              stage('Test') { 
+              stage('Linux test') { 
                   agent { label 'linux' }
                   environment {
                     PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
@@ -139,28 +163,8 @@ pipeline {
                         dir("${BASE_DIR}"){
                           deleteDir()
                           unstash 'source'
-                          sh """
-                          pwd
-                          make
-                          make testsuite
-                          
-                          export GOPACKAGES=\$(go list github.com/elastic/apm-server/...| grep -v /vendor/ | grep -v /scripts/cmd/)
-                          
-                          go get -u github.com/jstemmer/go-junit-report
-                          
-                          go get github.com/axw/gocov/gocov
-                          go get -u gopkg.in/matm/v1/gocov-html
-                          
-                          go get github.com/axw/gocov/...
-                          go get github.com/AlekSi/gocov-xml
-                          
-                          export OUT_FILE="build/test-report.out"
-                          go test -race \${GOPACKAGES} -v -coverprofile=\${OUT_FILE} 
-                          cat \${OUT_FILE} | go-junit-report > build/junit-report.xml
-                          gocov convert \${OUT_FILE} | gocov-html > build/coverage-report.html
-                          gocov convert \${OUT_FILE} | gocov-xml > build/coverage-report.xml
-
-                          make coverage-report
+                          sh """#!${job_shell}
+                          ./script/jenkins/linux-test.sh
                           """
                         }
                       }
@@ -206,9 +210,34 @@ pipeline {
                         //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
                         //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
                         //junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
-                        script {
+                        script { //JENKINS-44078
                           zip(zipFile: "coverage-files.zip", archive: true, dir: "${BASE_DIR}/build/coverage")
                           zip(zipFile: "system-tests-files.zip", archive: true, dir: "${BASE_DIR}/build/system-tests")
+                        }
+                      }
+                    }
+              }
+              
+              /**
+              Build and run tests on a windows environment.
+              Finally archive the results.
+              */
+              stage('windows test') { 
+                  agent { label 'windows' }
+                  
+                  when { 
+                    beforeAgent true
+                    environment name: 'windows_ci', value: 'true' 
+                  }
+                  steps {
+                    ansiColor('xterm') {
+                        dir("${BASE_DIR}"){  
+                          deleteDir()
+                          unstash 'source'
+                          powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
+                            --program powershell.exe `
+                            --args "-NonInteractive -ExecutionPolicy ByPass -File" `
+                            ".\\script\\jenkins\\windows-test.ps1"'''
                         }
                       }
                     }
@@ -257,7 +286,7 @@ pipeline {
                           deleteDir()
                           unstash 'source'
                           copyArtifacts filter: 'bench-last.txt', fingerprintArtifacts: true, optional: true, projectName: "${JOB_NAME}", selector: lastCompleted()
-                          sh """
+                          sh """#!${job_shell}
                           go get -u golang.org/x/tools/cmd/benchcmp
                           make bench > new.txt
                           [ -f new.txt ] && cat new.txt
@@ -297,52 +326,6 @@ pipeline {
                       }
                     }
               }*/
-              
-              /**
-              Updating generated files for Beat.
-              Checks the GO environment.
-              Checks the Python environment.
-              Checks YAML files are generated. 
-              Validate that all updates were committed.
-              */
-              /*
-              stage('Intake') { 
-                  agent { label 'linux' }
-                  
-                  steps {
-                    ansiColor('xterm') {
-                        dir("${BASE_DIR}"){  
-                          deleteDir()
-                          unstash 'source'
-                          sh """
-                          #!
-                          ./script/jenkins/intake.sh
-                          """
-                        }
-                      }
-                    }
-              }*/
-              
-              /**
-              Checks if kibana objects are updated.
-              */
-              /*
-              stage('Check kibana Obj. Updated') { 
-                  agent { label 'linux' }
-                  
-                  steps {
-                    ansiColor('xterm') {
-                        dir("${BASE_DIR}"){  
-                          deleteDir()
-                          unstash 'source'
-                          sh """
-                          #!
-                          ./script/jenkins/sync.sh
-                          """
-                        }
-                      }
-                    }
-              }*/
             }
         }
         
@@ -366,8 +349,7 @@ pipeline {
                   dir("${BASE_DIR}"){  
                     deleteDir()
                     unstash 'source'
-                    sh """
-                    #!
+                    sh """#!${job_shell}
                     make docs
                     """
                   }
@@ -375,11 +357,37 @@ pipeline {
               }
               post{
                 success {
-                  script{
+                  script{//JENKINS-44078
                       zip(zipFile: "doc-files.zip", archive: true, dir: "${BASE_DIR}/build/html_docs")
                   }
                 }
               }
+        }
+        
+        stage('Release') { 
+            agent { label 'linux' }
+            
+            when { 
+              beforeAgent true
+              environment name: 'releaser_ci', value: 'true' 
+            }
+            steps {
+              ansiColor('xterm') {
+                dir("${BASE_DIR}"){
+                  deleteDir()
+                  unstash 'source'
+                  sh """#!${job_shell}
+                  ./_beats/dev-tools/jenkins_release.sh
+                  """
+                }
+              }  
+            }
+            post {
+              success {
+                /** TODO check if it is better storing in snapshots */
+                //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}/build/distributions/", pattern: '${BASE_DIR}/build/distributions//**/*', sharedPublicly: true, showInline: true
+              }
+            }
         }
         
         /**
@@ -401,6 +409,29 @@ pipeline {
                 }
               }  
             }
+        }
+        
+        /**
+        Checks if kibana objects are updated.
+        */
+        stage('Check kibana Obj. Updated') { 
+            agent { label 'linux' }
+            
+            when { 
+              beforeAgent true
+              branch 'master' 
+            }
+            steps {
+              ansiColor('xterm') {
+                  dir("${BASE_DIR}"){  
+                    deleteDir()
+                    unstash 'source'
+                    sh """#!${job_shell} 
+                    ./script/jenkins/sync.sh
+                    """
+                  }
+                }
+              }
         }
     }
     post { 
