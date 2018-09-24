@@ -56,7 +56,7 @@ pipeline {
           }
       }
       
-      stage('Parallel Tests'){
+      stage('Parallel Builds'){
           failFast true
           parallel {
             
@@ -78,7 +78,10 @@ pipeline {
                         unstash 'source'
                         sh """
                         #!${job_shell} 
-                        ./script/jenkins/ci.sh
+                        set -euox pipefail
+                        source ./_beats/dev-tools/common.bash
+                        jenkins_setup
+                        make
                         """
                       }
                     }
