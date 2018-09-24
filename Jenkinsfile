@@ -1,3 +1,10 @@
+library identifier: 'apm@master', 
+retriever: modernSCM(
+  [$class: 'GitSCMSource', 
+  credentialsId: 'f6c7695a-671e-4f4f-a331-acdce44ff9ba', 
+  id: '37cf2c00-2cc7-482e-8c62-7bbffef475e2', 
+  remote: 'git@github.com:elastic/apm-pipeline-library.git'])
+   
 pipeline {
     agent any 
     options {
@@ -7,6 +14,7 @@ pipeline {
     }
     parameters {
       string(name: 'branch_specifier', defaultValue: "refs/heads/master", description: "the Git branch specifier to build (<branchName>, <tagName>, <commitId>, etc.)")
+      string(name: 'job_shell', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
       booleanParam(name: 'linux_ci', defaultValue: false, description: 'Enable Linux build')
       booleanParam(name: 'windows_cI', defaultValue: false, description: 'Enable Windows CI')
       booleanParam(name: 'test_ci', defaultValue: false, description: 'Enable test')
@@ -17,6 +25,9 @@ pipeline {
     
     stages {
       
+      /**
+       Checkout the code and stash it, to use it on other stages.
+      */
       stage('Checkout') { 
           agent { label 'linux' }
           environment {
@@ -43,43 +54,6 @@ pipeline {
               }
           }
       }
-      
-      /**
-      Basic build on a linux environment.
-      */
-      /*
-        stage('Build') { 
-            agent { label 'linux' }
-            environment {
-              PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
-              GOPATH = "${env.WORKSPACE}"
-            }
-            
-            steps {
-                ansiColor('xterm') {
-                    sh "export"
-                    echo "${PATH}:${HOME}/go/bin/:${WORKSPACE}/bin"
-                    //script {
-                    //}
-                    dir("${BASE_DIR}"){
-                      deleteDir()
-                      checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
-                        doGenerateSubmoduleConfigurations: false, 
-                        extensions: [], 
-                        submoduleCfg: [], 
-                        userRemoteConfigs: [[credentialsId: "${GIT_CREDENTIALS}", 
-                        url: "${GIT_REPO_URL}"]]])
-                      stash allowEmpty: true, name: 'source'
-                      sh """
-                      pwd
-                      make
-                      make update
-                      """
-                    }
-                }
-            }
-        }
-        */
         
         /**
         Build and run tests on a linux environment.
@@ -98,7 +72,7 @@ pipeline {
                     deleteDir()
                     unstash 'source'
                     sh """
-                    #!runbld 
+                    #!${job_shell} 
                     ./script/jenkins/ci.sh
                     """
                   }
@@ -289,7 +263,7 @@ pipeline {
                           deleteDir()
                           unstash 'source'
                           sh """
-                          #!runbld
+                          #!
                           ./script/jenkins/update-beats.sh
                           """
                           archiveArtifacts allowEmptyArchive: true, artifacts: "${BASE_DIR}/build", onlyIfSuccessful: false
@@ -315,7 +289,7 @@ pipeline {
                           deleteDir()
                           unstash 'source'
                           sh """
-                          #!runbld
+                          #!
                           ./script/jenkins/intake.sh
                           """
                         }
@@ -344,7 +318,7 @@ pipeline {
                           deleteDir()
                           unstash 'source'
                           sh """
-                          #!runbld
+                          #!
                           make docs
                           """
                         }
@@ -370,7 +344,7 @@ pipeline {
                           deleteDir()
                           unstash 'source'
                           sh """
-                          #!runbld
+                          #!
                           ./script/jenkins/sync.sh
                           """
                         }
