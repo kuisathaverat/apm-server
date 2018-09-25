@@ -13,6 +13,7 @@ trap cleanup EXIT
 
 make
 make testsuite
+make coverage-report
 
 export GOPACKAGES=$(go list github.com/elastic/apm-server/...| grep -v /vendor/ | grep -v /scripts/cmd/)
 
@@ -24,11 +25,13 @@ go get gopkg.in/matm/v1/gocov-html
 go get github.com/axw/gocov/...
 go get github.com/AlekSi/gocov-xml
 
-export COV_FILE="build/test-report.cov"
+export COV_DIR="build/coverage"
 export OUT_FILE="build/test-report.out"
-go test -race ${GOPACKAGES} -v -coverprofile=${COV_FILE} -bench 2>&1 ${OUT_FILE}
+go test -race ${GOPACKAGES} -v -bench . 2>&1 > ${OUT_FILE}
 cat ${OUT_FILE} | go-junit-report > build/junit-report.xml
-gocov convert ${COV_FILE} | gocov-html > build/coverage-report.html
-gocov convert ${COV_FILE} | gocov-xml > build/coverage-report.xml
-
-make coverage-report
+for i in "full.cov" "integration.cov" "system.cov" "unit.cov"
+do
+  name=$(basename ${i} .cov)
+  [ -f "${COV_DIR}/${i}" ] && gocov convert "${COV_DIR}/${i}" | gocov-html > build/coverage-${name}-report.html
+  [ -f "${COV_DIR}/${i}" ] && gocov convert "${COV_DIR}/${i}" | gocov-xml > build/coverage-${name}-report.xml
+done

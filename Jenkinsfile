@@ -182,15 +182,16 @@ pipeline {
                             allowMissing: true, 
                             keepAll: true,
                             reportDir: "${BASE_DIR}/build", 
-                            reportFiles: 'coverage-report.html', 
+                            reportFiles: 'coverage-*-report.html', 
                             reportName: 'coverage HTML v2', 
                             reportTitles: 'Coverage'])
                         publishCoverage(adapters: [
-                          coberturaAdapter("${BASE_DIR}/build/coverage-report.xml")], 
-                          sourceFileResolver: sourceFiles('NEVER_STORE'))
+                          coberturaAdapter("${BASE_DIR}/build/coverage-*-report.xml")], 
+                          sourceFileResolver: sourceFiles('STORE_ALL_BUILD'))
+                          /*
                         cobertura(autoUpdateHealth: false, 
                           autoUpdateStability: false, 
-                          coberturaReportFile: "${BASE_DIR}/build/coverage-report.xml", 
+                          coberturaReportFile: "${BASE_DIR}/build/coverage-*-report.xml", 
                           conditionalCoverageTargets: '70, 0, 0', 
                           failNoReports: false, 
                           failUnhealthy: false, 
@@ -201,15 +202,15 @@ pipeline {
                           onlyStable: false, 
                           sourceEncoding: 'ASCII', 
                           zoomCoverageChart: false)
+                          */
                         archiveArtifacts(allowEmptyArchive: true, 
                           artifacts: "${BASE_DIR}/build/TEST-*.out,${BASE_DIR}/build/TEST-*.xml,${BASE_DIR}/build/junit-report.xml", 
                           onlyIfSuccessful: false)
                         junit(allowEmptyResults: true, 
                           keepLongStdio: true, 
-                          testResults: "${BASE_DIR}/build/junit-report.xml")
+                          testResults: "${BASE_DIR}/build/junit-report.xml,${BASE_DIR}/build/TEST-*.xml")
                         //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
                         //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
-                        //junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
                         tar(file: "system-tests-files.tgz", archive: true, dir: "system-tests", pathPrefix: "${BASE_DIR}/build")
                         tar(file: "coverage-files.tgz", archive: true, dir: "coverage", pathPrefix: "${BASE_DIR}/build")
                       }
@@ -355,9 +356,7 @@ pipeline {
               }
               post{
                 success {
-                  script{//JENKINS-44078
-                      tar(file: "doc-files.tgz", archive: true, dir: "html_docs", pathPrefix: "${BASE_DIR}/build")
-                  }
+                  tar(file: "doc-files.tgz", archive: true, dir: "html_docs", pathPrefix: "${BASE_DIR}/build")
                 }
               }
         }
