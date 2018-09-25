@@ -5,11 +5,11 @@ source ./_beats/dev-tools/common.bash
 
 jenkins_setup
 
-cleanup() {
-  rm -rf $TEMP_PYTHON_ENV
-  make stop-environment fix-permissions
-}
-trap cleanup EXIT
+#cleanup() {
+#  rm -rf $TEMP_PYTHON_ENV
+#  make stop-environment fix-permissions
+#}
+#trap cleanup EXIT
 
 make
 #make testsuite
@@ -27,6 +27,7 @@ go get github.com/AlekSi/gocov-xml
 
 export COV_DIR="build/coverage"
 export OUT_FILE="build/test-report.out"
+mkdir -p build
 go test -race ${GOPACKAGES} -v 2>&1 | tee ${OUT_FILE}
 cat ${OUT_FILE} | go-junit-report > build/junit-report.xml
 for i in "full.cov" "integration.cov" "system.cov" "unit.cov"
