@@ -12,8 +12,8 @@ jenkins_setup
 #trap cleanup EXIT
 
 make
-#make testsuite
-#make coverage-report
+make testsuite
+make coverage-report
 
 export GOPACKAGES=$(go list github.com/elastic/apm-server/...| grep -v /vendor/ | grep -v /scripts/cmd/)
 
@@ -36,3 +36,4 @@ do
   [ -f "${COV_DIR}/${i}" ] && gocov convert "${COV_DIR}/${i}" | gocov-html > build/coverage-${name}-report.html
   [ -f "${COV_DIR}/${i}" ] && gocov convert "${COV_DIR}/${i}" | gocov-xml > build/coverage-${name}-report.xml
 done
+exit 0
