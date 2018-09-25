@@ -202,7 +202,7 @@ pipeline {
                           sourceEncoding: 'ASCII', 
                           zoomCoverageChart: false)
                         archiveArtifacts(allowEmptyArchive: true, 
-                          artifacts: "${BASE_DIR}/build/TEST-*.out,${BASE_DIR}/build/TEST-*.xml", 
+                          artifacts: "${BASE_DIR}/build/TEST-*.out,${BASE_DIR}/build/TEST-*.xml,${BASE_DIR}/build/junit-report.xml", 
                           onlyIfSuccessful: false)
                         junit(allowEmptyResults: true, 
                           keepLongStdio: true, 
@@ -210,13 +210,8 @@ pipeline {
                         //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
                         //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
                         //junit allowEmptyResults: true, keepLongStdio: true, testResults: "${BASE_DIR}/**/build/TEST-*.xml"
-                        tar(file: "system-tests-files.tgz", archive: true, dir: "${BASE_DIR}/build/system-tests", pathPrefix: "${BASE_DIR}/build/system-tests")
-                        script { //JENKINS-44078
-                          sh "mkdir -p ${BASE_DIR}/build/coverage ${BASE_DIR}/build/system-tests"                          
-                          sh "rm ${BASE_DIR}/build/system-tests/last_run || exit 0" //a symbolic link
-                          zip(zipFile: "coverage-files.zip", archive: true, dir: "${BASE_DIR}/build/coverage")
-                          zip(zipFile: "system-tests-files.zip", archive: true, dir: "${BASE_DIR}/build/system-tests")
-                        }
+                        tar(file: "system-tests-files.tgz", archive: true, dir: "system-tests", pathPrefix: "${BASE_DIR}/build")
+                        tar(file: "coverage-files.tgz", archive: true, dir: "coverage", pathPrefix: "${BASE_DIR}/build")
                       }
                     }
               }
@@ -361,7 +356,7 @@ pipeline {
               post{
                 success {
                   script{//JENKINS-44078
-                      zip(zipFile: "doc-files.zip", archive: true, dir: "${BASE_DIR}/build/html_docs")
+                      tar(file: "doc-files.tgz", archive: true, dir: "html_docs", pathPrefix: "${BASE_DIR}/build")
                   }
                 }
               }
