@@ -287,12 +287,11 @@ pipeline {
                           copyArtifacts filter: 'bench-last.txt', fingerprintArtifacts: true, optional: true, projectName: "${JOB_NAME}", selector: lastCompleted()
                           sh """#!${job_shell}
                           go get -u golang.org/x/tools/cmd/benchcmp
-                          make bench > new.txt
-                          [ -f new.txt ] && cat new.txt
-                          [ -f bench-last.txt ] && benchcmp bench-last.txt new.txt > bench-diff.txt 
+                          make bench | tee bench-new.txt
+                          [ -f bench-new.txt ] && cat bench-new.txt
+                          [ -f bench-last.txt ] && benchcmp bench-last.txt bench-new.txt | tee bench-diff.txt 
                           [ -f bench-last.txt ] && mv bench-last.txt bench-old.txt
-                          mv new.txt bench-last.txt
-                          [ -f bench-diff.txt ] && cat bench-diff.txt
+                          mv bench-new.txt bench-last.txt
                           """
                           archiveArtifacts allowEmptyArchive: true, artifacts: "bench-last.txt", onlyIfSuccessful: false
                           archiveArtifacts allowEmptyArchive: true, artifacts: "bench-old.txt", onlyIfSuccessful: false

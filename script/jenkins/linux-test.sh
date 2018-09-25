@@ -12,8 +12,8 @@ cleanup() {
 trap cleanup EXIT
 
 make
-make testsuite
-make coverage-report
+#make testsuite
+#make coverage-report
 
 export GOPACKAGES=$(go list github.com/elastic/apm-server/...| grep -v /vendor/ | grep -v /scripts/cmd/)
 
@@ -27,7 +27,7 @@ go get github.com/AlekSi/gocov-xml
 
 export COV_DIR="build/coverage"
 export OUT_FILE="build/test-report.out"
-go test -race ${GOPACKAGES} -v -bench . 2>&1 > ${OUT_FILE}
+go test -race ${GOPACKAGES} -v 2>&1 | tee ${OUT_FILE}
 cat ${OUT_FILE} | go-junit-report > build/junit-report.xml
 for i in "full.cov" "integration.cov" "system.cov" "unit.cov"
 do
