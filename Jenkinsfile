@@ -188,7 +188,6 @@ pipeline {
                         publishCoverage(adapters: [
                           coberturaAdapter("${BASE_DIR}/build/coverage-*-report.xml")], 
                           sourceFileResolver: sourceFiles('STORE_ALL_BUILD'))
-                          /*
                         cobertura(autoUpdateHealth: false, 
                           autoUpdateStability: false, 
                           coberturaReportFile: "${BASE_DIR}/build/coverage-*-report.xml", 
@@ -202,7 +201,6 @@ pipeline {
                           onlyStable: false, 
                           sourceEncoding: 'ASCII', 
                           zoomCoverageChart: false)
-                          */
                         archiveArtifacts(allowEmptyArchive: true, 
                           artifacts: "${BASE_DIR}/build/TEST-*.out,${BASE_DIR}/build/TEST-*.xml,${BASE_DIR}/build/junit-report.xml", 
                           onlyIfSuccessful: false)
