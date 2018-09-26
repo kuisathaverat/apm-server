@@ -15,6 +15,16 @@ pipeline {
     parameters {
       string(name: 'branch_specifier', defaultValue: "refs/heads/master", description: "the Git branch specifier to build (<branchName>, <tagName>, <commitId>, etc.)")
       string(name: 'job_shell', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
+      string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
+      string(name: 'JOB_HEY_APM_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the Hey APM test")      
+      
+      string(name: 'NODEJS_AGENT_YAML', defaultValue: "tests/versions/nodejs.yml", description: "") 
+      string(name: 'PYTHON_AGENT_YAML', defaultValue: "tests/versions/python.yml", description: "")      
+      string(name: 'RUBY_AGENT_YAML', defaultValue: "tests/versions/ruby.yml", description: "")           
+      string(name: 'APM_SERVER_YAML', defaultValue: "tests/versions/apm_server.yml", description: "")      
+
+      booleanParam(name: 'SNAPSHOT', defaultValue: false, description: 'Build snapshot packages (defaults to true)')
+      
       booleanParam(name: 'linux_ci', defaultValue: false, description: 'Enable Linux build')
       booleanParam(name: 'windows_cI', defaultValue: false, description: 'Enable Windows CI')
       booleanParam(name: 'test_ci', defaultValue: false, description: 'Enable test')
@@ -22,7 +32,6 @@ pipeline {
       booleanParam(name: 'bench_ci', defaultValue: false, description: 'Enable benchmarks')
       booleanParam(name: 'doc_ci', defaultValue: false, description: 'Enable build documentation')
       booleanParam(name: 'deploy_ci', defaultValue: false, description: 'Enable deploy')
-      booleanParam(name: 'SNAPSHOT', defaultValue: false, description: 'Build snapshot packages (defaults to true)')
     }
     
     stages {
@@ -38,12 +47,9 @@ pipeline {
           }
           
           steps {
-              ansiColor('xterm') {
+              withEnvWrapper() {
                   sh "export"
                   echo "${PATH}:${HOME}/go/bin/:${WORKSPACE}/bin"
-                  //script {
-                  //}
-                  deleteDir()
                   dir("${BASE_DIR}"){      
                     checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
                       doGenerateSubmoduleConfigurations: false, 
@@ -139,7 +145,7 @@ pipeline {
           } 
         }
         
-        stage('Parallel Tests'){
+        stage('Parallel Tests') {
             failFast true
             parallel {
               
@@ -254,11 +260,39 @@ pipeline {
                     ansiColor('xterm') {
                       deleteDir()
                       unstash 'source'
-                      //./scripts/compose.py start master --apm-server-build=https://github.com/elastic/apm-server.git@v2 --force-build
                       dir("${BASE_DIR}"){
-                        echo "NOOP"
+                        script{
+                          env.GIT_COMMIT_APM_SERVER = getGitCommitSha()
+                        }
+                      }
+                      dir("src/github.com/elastic/hey-apm"){
+                        checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
+                          doGenerateSubmoduleConfigurations: false, 
+                          extensions: [], 
+                          submoduleCfg: [], 
+                          userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                          url: "git@github.com:elastic/apm-integration-testing.git"]]])
+                        sh """#!${job_shell}
+                        srcdir=`dirname \$0`
+                        test -z "\$srcdir" && srcdir=.
+                        . \${srcdir}/common.sh
+                        
+                        COMPOSE_ARGS="${GIT_COMMIT_APM_SERVER} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
+                        ./scripts/ci/all.sh
+                        """
+                        //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
+                        //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
+                        //./scripts/ci/versions_ruby.sh $RUBY_AGENT $APM_SERVER
+                        //./scripts/compose.py start master --apm-server-build=https://github.com/elastic/apm-server.git@v2 --force-build
                       }
                     }  
+                  } 
+                  post {
+                    always {
+                      junit(allowEmptyResults: true, 
+                        keepLongStdio: true, 
+                        testResults: "${BASE_DIR}/tests/results/*-junit.xml")
+                    }
                   }
               }
               
@@ -277,7 +311,7 @@ pipeline {
                       deleteDir()
                       unstash 'source'
                       dir("src/github.com/elastic/hey-apm"){
-                        checkout([$class: 'GitSCM', branches: [[name: "refs/heads/master"]], 
+                        checkout([$class: 'GitSCM', branches: [[name: "${JOB_HEY_APM_TEST_BRANCH_SPEC}"]], 
                           doGenerateSubmoduleConfigurations: false, 
                           extensions: [], 
                           submoduleCfg: [], 
