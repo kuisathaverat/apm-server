@@ -49,7 +49,7 @@ pipeline {
                       doGenerateSubmoduleConfigurations: false, 
                       extensions: [], 
                       submoduleCfg: [], 
-                      userRemoteConfigs: [[credentialsId: "${GIT_CREDENTIALS}", 
+                      userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                       url: "${GIT_REPO_URL}"]]])
                   }
                   stash allowEmpty: true, name: 'source'
@@ -207,8 +207,8 @@ pipeline {
                         junit(allowEmptyResults: true, 
                           keepLongStdio: true, 
                           testResults: "${BASE_DIR}/build/junit-report.xml,${BASE_DIR}/build/TEST-*.xml")
-                        //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
-                        //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
+                        //googleStorageUpload bucket: "gs://${JOB_GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${JOB_GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/system-tests/run/**/*', sharedPublicly: true, showInline: true
+                        //googleStorageUpload bucket: "gs://${JOB_GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${JOB_GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}", pattern: '**/build/TEST-*.out', sharedPublicly: true, showInline: true
                         tar(file: "system-tests-files.tgz", archive: true, dir: "system-tests", pathPrefix: "${BASE_DIR}/build")
                         tar(file: "coverage-files.tgz", archive: true, dir: "coverage", pathPrefix: "${BASE_DIR}/build")
                       }
@@ -257,6 +257,37 @@ pipeline {
                       //./scripts/compose.py start master --apm-server-build=https://github.com/elastic/apm-server.git@v2 --force-build
                       dir("${BASE_DIR}"){
                         echo "NOOP"
+                      }
+                    }  
+                  }
+              }
+              
+              /**
+                Unit tests and apm-server stress testing.
+              */
+              stage('Hey APM test') { 
+                  agent { label 'linux' }
+                  
+                  when { 
+                    beforeAgent true
+                    environment name: 'integration_test_ci', value: 'true' 
+                  }
+                  steps {
+                    ansiColor('xterm') {
+                      deleteDir()
+                      unstash 'source'
+                      dir("src/github.com/elastic/hey-apm"){
+                        checkout([$class: 'GitSCM', branches: [[name: "refs/heads/master"]], 
+                          doGenerateSubmoduleConfigurations: false, 
+                          extensions: [], 
+                          submoduleCfg: [], 
+                          userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                          url: "https://github.com/elastic/hey-apm.git"]]])
+                        }
+                      dir("${BASE_DIR}"){
+                        sh """#!${job_shell}
+                        ./script/jenkins/hey-apm-test.sh
+                        """
                       }
                     }  
                   }
@@ -380,7 +411,7 @@ pipeline {
               success {
                 echo "Archive packages"
                 /** TODO check if it is better storing in snapshots */
-                //googleStorageUpload bucket: "gs://${GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}/build/distributions/", pattern: '${BASE_DIR}/build/distributions//**/*', sharedPublicly: true, showInline: true
+                //googleStorageUpload bucket: "gs://${JOB_GCS_BUCKET}/${JOB_NAME}/${BUILD_NUMBER}", credentialsId: "${JOB_GCS_CREDENTIALS}", pathPrefix: "${BASE_DIR}/build/distributions/", pattern: '${BASE_DIR}/build/distributions//**/*', sharedPublicly: true, showInline: true
               }
             }
         }
@@ -445,6 +476,8 @@ pipeline {
       }
       always { 
           echo 'Post Actions'
+          setGithubCommitStatus()
+          updateGithubCommitStatus()
       }
     }
 }
