@@ -56,7 +56,7 @@ pipeline {
                       extensions: [], 
                       submoduleCfg: [], 
                       userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
-                      url: "${JOB_GIT_REPO_URL}"]]])
+                      url: "${JOB_GIT_URL}"]]])
                   }
                   stash allowEmpty: true, name: 'source'
               }
