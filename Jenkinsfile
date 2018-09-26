@@ -261,6 +261,7 @@ pipeline {
                       deleteDir()
                       unstash 'source'
                       dir("${BASE_DIR}"){
+                        echo "get commit"
                         script{
                           env.GIT_COMMIT_APM_SERVER = getGitCommitSha()
                         }
