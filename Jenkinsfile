@@ -57,6 +57,7 @@ pipeline {
                       submoduleCfg: [], 
                       userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                       url: "${JOB_GIT_URL}"]]])
+                      env.JOB_GIT_COMMIT = getGitCommitSha()
                   }
                   stash allowEmpty: true, name: 'source'
               }
@@ -82,8 +83,7 @@ pipeline {
                   branch 'master' 
                 }
                 steps {
-                  ansiColor('xterm') {
-                      deleteDir()
+                  withEnvWrapper() {
                       unstash 'source'
                       dir("${BASE_DIR}"){  
                         sh """#!${job_shell}
@@ -106,8 +106,7 @@ pipeline {
                   environment name: 'linux_ci', value: 'true' 
                 }
                 steps {
-                  ansiColor('xterm') {
-                      deleteDir()
+                  withEnvWrapper() {
                       unstash 'source'
                       dir("${BASE_DIR}"){    
                         sh """#!${job_shell}
@@ -130,8 +129,7 @@ pipeline {
                   environment name: 'windows_ci', value: 'true' 
                 }
                 steps {
-                  ansiColor('xterm') {
-                      deleteDir()
+                  withEnvWrapper() {
                       unstash 'source'
                       dir("${BASE_DIR}"){  
                         powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
@@ -165,8 +163,7 @@ pipeline {
                     environment name: 'test_ci', value: 'true' 
                   }
                   steps {
-                    ansiColor('xterm') {
-                        deleteDir()
+                    withEnvWrapper() {
                         unstash 'source'
                         dir("${BASE_DIR}"){
                           sh """#!${job_shell}
@@ -233,8 +230,7 @@ pipeline {
                     environment name: 'windows_ci', value: 'true' 
                   }
                   steps {
-                    ansiColor('xterm') {
-                        deleteDir()
+                    withEnvWrapper() {
                         unstash 'source'
                         dir("${BASE_DIR}"){  
                           powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
@@ -257,12 +253,14 @@ pipeline {
                     environment name: 'integration_test_ci', value: 'true' 
                   }
                   steps {
-                    ansiColor('xterm') {
-                      deleteDir()
+                    withEnvWrapper() {
                       unstash 'source'
+                      echo pwd()
                       dir("${BASE_DIR}"){
+                        echo pwd()
                         echo "get commit"
                         script{
+                          echo pwd()
                           env.GIT_COMMIT_APM_SERVER = getGitCommitSha()
                         }
                       }
@@ -308,8 +306,7 @@ pipeline {
                     environment name: 'integration_test_ci', value: 'true' 
                   }
                   steps {
-                    ansiColor('xterm') {
-                      deleteDir()
+                    withEnvWrapper() {
                       unstash 'source'
                       dir("src/github.com/elastic/hey-apm"){
                         checkout([$class: 'GitSCM', branches: [[name: "${JOB_HEY_APM_TEST_BRANCH_SPEC}"]], 
@@ -344,8 +341,7 @@ pipeline {
                     environment name: 'bench_ci', value: 'true' 
                   }
                   steps {
-                    ansiColor('xterm') {
-                        deleteDir()
+                    withEnvWrapper() {
                         unstash 'source'
                         dir("${BASE_DIR}"){  
                           copyArtifacts filter: 'bench-last.txt', fingerprintArtifacts: true, optional: true, projectName: "${JOB_NAME}", selector: lastCompleted()
@@ -407,8 +403,7 @@ pipeline {
               environment name: 'doc_ci', value: 'true' 
             }
             steps {
-              ansiColor('xterm') {
-                  deleteDir()
+              withEnvWrapper() {
                   unstash 'source'
                   dir("${BASE_DIR}"){  
                     sh """#!${job_shell}
@@ -432,8 +427,7 @@ pipeline {
               environment name: 'releaser_ci', value: 'true' 
             }
             steps {
-              ansiColor('xterm') {
-                deleteDir()
+              withEnvWrapper() {
                 unstash 'source'
                 dir("${BASE_DIR}"){
                   sh """#!${job_shell}
@@ -462,8 +456,7 @@ pipeline {
               environment name: 'deploy_ci', value: 'true' 
             }
             steps {
-              ansiColor('xterm') {
-                deleteDir()
+              withEnvWrapper() {
                 unstash 'source'
                 dir("${BASE_DIR}"){
                   echo "NOOP"
@@ -483,8 +476,7 @@ pipeline {
               branch 'master' 
             }
             steps {
-              ansiColor('xterm') {
-                  deleteDir()
+              withEnvWrapper() {
                   unstash 'source'
                   dir("${BASE_DIR}"){  
                     sh """#!${job_shell} 
@@ -511,8 +503,13 @@ pipeline {
       }
       always { 
           echo 'Post Actions'
-          setGithubCommitStatus()
-          updateGithubCommitStatus()
+          setGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
+            commitSha: "${JOB_GIT_COMMIT}",
+            message: 'Build result.',
+            state: "SUCCESS")
+          updateGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
+            commitSha: "${JOB_GIT_COMMIT}",
+            message: 'Build result.')
       }
     }
 }
