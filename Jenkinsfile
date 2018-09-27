@@ -6,7 +6,11 @@ retriever: modernSCM(
   remote: 'git@github.com:elastic/apm-pipeline-library.git'])
    
 pipeline {
-    agent any 
+    agent any
+    environment {
+      HOME = "${env.HUDSON_HOME}"
+    }
+     
     options {
       timeout(time: 1, unit: 'HOURS') 
       buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2', daysToKeepStr: '30'))
