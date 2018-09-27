@@ -258,15 +258,6 @@ pipeline {
                   steps {
                     withEnvWrapper() {
                       unstash 'source'
-                      echo pwd()
-                      dir("${BASE_DIR}"){
-                        echo pwd()
-                        echo "get commit"
-                        script{
-                          echo pwd()
-                          env.GIT_COMMIT_APM_SERVER = getGitCommitSha()
-                        }
-                      }
                       dir("src/github.com/elastic/hey-apm"){
                         checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
                           doGenerateSubmoduleConfigurations: false, 
@@ -279,7 +270,7 @@ pipeline {
                         test -z "\$srcdir" && srcdir=.
                         . \${srcdir}/common.sh
                         
-                        COMPOSE_ARGS="${GIT_COMMIT_APM_SERVER} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
+                        COMPOSE_ARGS="${JOB_GIT_COMMIT} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
                         ./scripts/ci/all.sh
                         """
                         //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
