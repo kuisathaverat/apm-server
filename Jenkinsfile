@@ -5,7 +5,7 @@ retriever: modernSCM(
   id: '37cf2c00-2cc7-482e-8c62-7bbffef475e2', 
   remote: 'git@github.com:elastic/apm-pipeline-library.git'])
    
-def JOB_GIT_COMMIT = GIT_COMMIT
+def env.JOB_GIT_COMMIT = env.GIT_COMMIT
 
 pipeline {
     agent any 
