@@ -57,7 +57,10 @@ pipeline {
                       submoduleCfg: [], 
                       userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                       url: "${JOB_GIT_URL}"]]])
-                      env.JOB_GIT_COMMIT = getGitCommitSha()
+                      script{
+                        echo pwd()
+                        env.JOB_GIT_COMMIT = getGitCommitSha()
+                      }
                   }
                   stash allowEmpty: true, name: 'source'
               }
