@@ -42,14 +42,14 @@ pipeline {
       stage('Checkout') { 
           agent { label 'linux' }
           environment {
-            PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
+            PATH = "${env.PATH}:${env.HUDSON_HOME}/go/bin/:${env.WORKSPACE}/bin"
             GOPATH = "${env.WORKSPACE}"
           }
           
           steps {
               withEnvWrapper() {
                   sh "export"
-                  echo "${PATH}:${HOME}/go/bin/:${WORKSPACE}/bin"
+                  echo "${PATH}:${HUDSON_HOME}/go/bin/:${WORKSPACE}/bin"
                   dir("${BASE_DIR}"){      
                     checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
                       doGenerateSubmoduleConfigurations: false, 
@@ -157,7 +157,7 @@ pipeline {
               stage('Linux test') { 
                   agent { label 'linux' }
                   environment {
-                    PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
+                    PATH = "${env.PATH}:${env.HUDSON_HOME}/go/bin/:${env.WORKSPACE}/bin"
                     GOPATH = "${env.WORKSPACE}"
                   }
                   
@@ -335,7 +335,7 @@ pipeline {
               stage('Benchmarking') {
                   agent { label 'linux' }
                   environment {
-                    PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
+                    PATH = "${env.PATH}:${env.HUDSON_HOME}/go/bin/:${env.WORKSPACE}/bin"
                     GOPATH = "${env.WORKSPACE}"
                   }
                   
@@ -397,7 +397,7 @@ pipeline {
         stage('Documentation') { 
             agent { label 'linux' }
             environment {
-              PATH = "${env.PATH}:${env.HOME}/go/bin/:${env.WORKSPACE}/bin"
+              PATH = "${env.PATH}:${env.HUDSON_HOME}/go/bin/:${env.WORKSPACE}/bin"
               GOPATH = "${env.WORKSPACE}"
             }
             
