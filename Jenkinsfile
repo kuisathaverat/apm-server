@@ -270,6 +270,7 @@ pipeline {
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
                         sh """#!${job_shell}
+                        cat ./scripts/ci/common.sh
                         
                         . ./scripts/ci/common.sh
                         
