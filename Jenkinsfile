@@ -262,7 +262,7 @@ pipeline {
                   steps {
                     withEnvWrapper() {
                       unstash 'source'
-                      dir("src/github.com/elastic/hey-apm"){
+                      dir("src/github.com/elastic/apm-integration-testing"){
                         checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
                           doGenerateSubmoduleConfigurations: false, 
                           extensions: [], 
@@ -270,12 +270,10 @@ pipeline {
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
                         sh """#!${job_shell}
-                        srcdir=`dirname \$0`
-                        test -z "\$srcdir" && srcdir=.
-                        . \${srcdir}/common.sh
+                        source scripts/ci/common.sh
                         
                         COMPOSE_ARGS="${JOB_GIT_COMMIT} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
-                        ./scripts/ci/all.sh
+                        runTests env-agent-all docker-test-all
                         """
                         //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
                         //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
