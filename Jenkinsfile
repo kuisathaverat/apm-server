@@ -271,7 +271,19 @@ pipeline {
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
                           sh """#!${job_shell}
                           
-                          . ./scripts/ci/common.sh
+                          function stopEnv(){
+                            make stop-env
+                          }
+                          
+                          function runTests(){
+                            targets="\${targets} \$@"
+                            export VENV=\${VENV:-\${TMPDIR:-/tmp/}venv-\$\$}
+                            make \${targets}
+                          }
+                          
+                          if [ -n "${BUILD_NUMBER}" ]; then
+                            docker ps -aq | xargs -t docker rm -f || true
+                          fi
                           
                           COMPOSE_ARGS="${JOB_GIT_COMMIT} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel" 
                           runTests env-agent-all docker-test-all
