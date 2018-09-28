@@ -269,7 +269,31 @@ pipeline {
                           submoduleCfg: [], 
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
-                        echo "WTH"
+                          sh """
+                          function stopEnv() {
+                            make stop-env
+                          }
+
+                          function runTests() {
+                            targets=""
+                            if [ -z "\${REUSE_CONTAINERS}" ]; then
+                              trap "stopEnv" EXIT
+                              targets="destroy-env"
+                            fi
+                            targets="\${targets} $@"
+                            export VENV=\${VENV:-\${TMPDIR:-/tmp/}venv-$$}
+                            make \${targets}
+                          }
+
+                          # assume we're under CI if BUILD_NUMBER is set
+                          if [ -n "${BUILD_NUMBER}" ]; then
+                            # kill any running containers under CI
+                            docker ps -aq | xargs -t docker rm -f || true
+                          fi
+
+                          COMPOSE_ARGS="${JOB_GIT_COMMIT} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
+                          runTests env-agent-all docker-test-all
+                          """
                         //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
                         //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
                         //./scripts/ci/versions_ruby.sh $RUBY_AGENT $APM_SERVER
