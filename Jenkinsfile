@@ -285,7 +285,7 @@ pipeline {
                             docker ps -aq | xargs -t docker rm -f || true
                           fi
                           
-                          COMPOSE_ARGS="${JOB_GIT_COMMIT} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel --stack-version 6.4" 
+                          COMPOSE_ARGS="${JOB_GIT_COMMIT} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel 6.4" 
                           runTests env-agent-all docker-test-all
                           """
                         //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
