@@ -269,7 +269,7 @@ pipeline {
                           submoduleCfg: [], 
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
-                          sh """#!${job_shell}
+                          sh """#!/bin/bash
                           
                           function stopEnv(){
                             make stop-env
