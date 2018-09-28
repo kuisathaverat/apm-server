@@ -270,7 +270,8 @@ pipeline {
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
                         sh """#!${job_shell}
-                        . scripts/ci/common.sh
+                        
+                        . ./scripts/ci/common.sh
                         
                         COMPOSE_ARGS="${JOB_GIT_COMMIT} --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
                         runTests env-agent-all docker-test-all
