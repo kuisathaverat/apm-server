@@ -270,7 +270,10 @@ pipeline {
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
                           sh """#!/bin/bash
-                          
+                          sh ./scripts/ci/java.sh
+                          """
+                          /*
+                          sh """#!/bin/bash
                           function stopEnv(){
                             make stop-env
                           }
@@ -288,6 +291,7 @@ pipeline {
                           COMPOSE_ARGS="master --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel" 
                           runTests env-agent-all docker-test-all
                           """
+                          */
                         //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
                         //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
                         //./scripts/ci/versions_ruby.sh $RUBY_AGENT $APM_SERVER
