@@ -4,7 +4,11 @@ export PATH=$PATH:$GOPATH/bin
 eval "$(gvm 1.10.3)"
 echo "Installing hey-apm dependencies and running unit tests..."
 go get -v -u github.com/golang/dep/cmd/dep
-dep ensure -v
+go get -v -u github.com/graphaelli/hey/requester
+go get -v -u github.com/olivere/elastic
+go get -v -u github.com/pkg/errors
+go get -v -u github.com/struCoder/pidusage
+#dep ensure -v
 SKIP_EXTERNAL=1 SKIP_STRESS=1 go test -v ./...
 echo "Fetching apm-server and installing latest go-licenser and mage..."
 APM_SERVER_DIR=$GOPATH/src/github.com/elastic/apm-server
