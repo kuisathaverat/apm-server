@@ -23,7 +23,8 @@ pipeline {
       string(name: 'job_shell', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
       string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
       string(name: 'JOB_HEY_APM_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the Hey APM test")      
-      
+      string(name: 'ELASTIC_STACK_VERSION', defaultValue: "master", description: "Elastic Stack version used for integration test (master, 6.3, 6.4, ...)")      
+
       string(name: 'NODEJS_AGENT_YAML', defaultValue: "tests/versions/nodejs.yml", description: "") 
       string(name: 'PYTHON_AGENT_YAML', defaultValue: "tests/versions/python.yml", description: "")      
       string(name: 'RUBY_AGENT_YAML', defaultValue: "tests/versions/ruby.yml", description: "")           
@@ -347,7 +348,7 @@ pipeline {
                           sh """#!/usr/bin/env bash
                           . ./scripts/ci/common.sh
 
-                          DEFAULT_COMPOSE_ARGS="master --apm-server-build https://github.com/kuisathaverat/apm-server.git@${JOB_GIT_COMMIT} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
+                          DEFAULT_COMPOSE_ARGS="${ELASTIC_STACK_VERSION} --apm-server-build ${JOB_GIT_URL}@${JOB_GIT_COMMIT} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
                           export COMPOSE_ARGS=\${COMPOSE_ARGS:-\${DEFAULT_COMPOSE_ARGS}}
                           runTests env-agent-all docker-test-all
                           """
