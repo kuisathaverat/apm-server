@@ -9,6 +9,8 @@ pipeline {
     agent any
     environment {
       HOME = "${env.HUDSON_HOME}"
+      BASE_DIR="src/github.com/elastic/apm-server"
+      JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
     }
      
     options {
@@ -272,29 +274,17 @@ pipeline {
                           submoduleCfg: [], 
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
-                          sh """#!${job_shell}
-                          /bin/bash ./scripts/ci/all.sh
-                          """
-                          /*
-                          sh """#!/bin/bash
-                          function stopEnv(){
-                            make stop-env
-                          }
+                          //sh """#!${job_shell}
+                          ///bin/bash ./scripts/ci/all.sh
+                          //"""
                           
-                          function runTests(){
-                            targets="\${targets} \$@"
-                            export VENV=\${VENV:-\${TMPDIR:-/tmp/}venv-\$\$}
-                            make \${targets}
-                          }
-                          
-                          if [ -n "${BUILD_NUMBER}" ]; then
-                            docker ps -aq | xargs -t docker rm -f || true
-                          fi
-                          
-                          COMPOSE_ARGS="master --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel" 
+                          sh """#!/usr/bin/env bash
+                          . ./scripts/ci/common.sh
+
+                          DEFAULT_COMPOSE_ARGS="master --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
+                          export COMPOSE_ARGS=\${COMPOSE_ARGS:-\${DEFAULT_COMPOSE_ARGS}}
                           runTests env-agent-all docker-test-all
                           """
-                          */
                         //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
                         //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
                         //./scripts/ci/versions_ruby.sh $RUBY_AGENT $APM_SERVER
