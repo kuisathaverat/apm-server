@@ -8,6 +8,7 @@ go get -v -u github.com/graphaelli/hey/requester
 go get -v -u github.com/olivere/elastic
 go get -v -u github.com/pkg/errors
 go get -v -u github.com/struCoder/pidusage
+go get -v -u github.com/stretchr/testify/assert
 #dep ensure -v
 SKIP_EXTERNAL=1 SKIP_STRESS=1 go test -v ./...
 echo "Fetching apm-server and installing latest go-licenser and mage..."
