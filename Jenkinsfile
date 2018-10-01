@@ -252,89 +252,6 @@ pipeline {
               }
               
               /**
-              TODO run integration test with the commit version.
-              */
-              stage('Integration test') { 
-                  agent { label 'linux' }
-                  environment {
-                    TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
-                  }
-                  
-                  when { 
-                    beforeAgent true
-                    environment name: 'integration_test_ci', value: 'true' 
-                  }
-                  steps {
-                    withEnvWrapper() {
-                      unstash 'source'
-                      dir("${TEST_BASE_DIR}"){
-                        checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
-                          doGenerateSubmoduleConfigurations: false, 
-                          extensions: [], 
-                          submoduleCfg: [], 
-                          userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
-                          url: "git@github.com:elastic/apm-integration-testing.git"]]])
-                          //sh """#!${job_shell}
-                          ///bin/bash ./scripts/ci/all.sh
-                          //"""
-                          
-                          sh """#!/usr/bin/env bash
-                          . ./scripts/ci/common.sh
-
-                          DEFAULT_COMPOSE_ARGS="master --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
-                          export COMPOSE_ARGS=\${COMPOSE_ARGS:-\${DEFAULT_COMPOSE_ARGS}}
-                          runTests env-agent-all docker-test-all
-                          """
-                        //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
-                        //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
-                        //./scripts/ci/versions_ruby.sh $RUBY_AGENT $APM_SERVER
-                        //./scripts/compose.py start master --apm-server-build=https://github.com/elastic/apm-server.git@v2 --force-build
-                      }
-                    }  
-                  } 
-                  post {
-                    always {
-                      junit(allowEmptyResults: true, 
-                        keepLongStdio: true, 
-                        testResults: "${TEST_BASE_DIR}/tests/results/*-junit.xml")
-                    }
-                  }
-              }
-              
-              /**
-                Unit tests and apm-server stress testing.
-              */
-              stage('Hey APM test') { 
-                  agent { label 'linux' }
-                  environment {
-                    TEST_BASE_DIR = "src/github.com/elastic/hey-apm"
-                  }
-                  
-                  when { 
-                    beforeAgent true
-                    environment name: 'integration_test_ci', value: 'true' 
-                  }
-                  steps {
-                    withEnvWrapper() {
-                      unstash 'source'
-                      dir("${TEST_BASE_DIR}"){
-                        checkout([$class: 'GitSCM', branches: [[name: "${JOB_HEY_APM_TEST_BRANCH_SPEC}"]], 
-                          doGenerateSubmoduleConfigurations: false, 
-                          extensions: [], 
-                          submoduleCfg: [], 
-                          userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
-                          url: "https://github.com/elastic/hey-apm.git"]]])
-                        }
-                      dir("${BASE_DIR}"){
-                        sh """#!${job_shell}
-                        ./script/jenkins/hey-apm-test.sh
-                        """
-                      }
-                    }  
-                  }
-              }
-              
-              /**
               Runs benchmarks on the current version and compare it with the previous ones.
               Finally archive the results.
               */
@@ -395,6 +312,91 @@ pipeline {
               }*/
             }
         }
+        
+        stage('Integration Tests') {
+            failFast true
+            when { 
+              beforeAgent true
+              environment name: 'integration_test_ci', value: 'true' 
+            }
+            
+            parallel {
+              /**
+              TODO run integration test with the commit version.
+              */
+              stage('Integration test') { 
+                  agent { label 'linux' }
+                  environment {
+                    TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
+                  }
+
+                  steps {
+                    withEnvWrapper() {
+                      unstash 'source'
+                      dir("${TEST_BASE_DIR}"){
+                        checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
+                          doGenerateSubmoduleConfigurations: false, 
+                          extensions: [], 
+                          submoduleCfg: [], 
+                          userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                          url: "git@github.com:elastic/apm-integration-testing.git"]]])
+                          //sh """#!${job_shell}
+                          ///bin/bash ./scripts/ci/all.sh
+                          //"""
+                          
+                          sh """#!/usr/bin/env bash
+                          . ./scripts/ci/common.sh
+
+                          DEFAULT_COMPOSE_ARGS="${JOB_GIT_COMMIT} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
+                          export COMPOSE_ARGS=\${COMPOSE_ARGS:-\${DEFAULT_COMPOSE_ARGS}}
+                          runTests env-agent-all docker-test-all
+                          """
+                        //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
+                        //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
+                        //./scripts/ci/versions_ruby.sh $RUBY_AGENT $APM_SERVER
+                        //./scripts/compose.py start master --apm-server-build=https://github.com/elastic/apm-server.git@v2 --force-build
+                      }
+                    }  
+                  } 
+                  post {
+                    always {
+                      junit(allowEmptyResults: true, 
+                        keepLongStdio: true, 
+                        testResults: "${TEST_BASE_DIR}/tests/results/*-junit.xml")
+                    }
+                  }
+              }
+              
+              /**
+                Unit tests and apm-server stress testing.
+              */
+              stage('Hey APM test') { 
+                  agent { label 'linux' }
+                  environment {
+                    TEST_BASE_DIR = "src/github.com/elastic/hey-apm"
+                  }
+                  
+                  steps {
+                    withEnvWrapper() {
+                      unstash 'source'
+                      dir("${TEST_BASE_DIR}"){
+                        checkout([$class: 'GitSCM', branches: [[name: "${JOB_HEY_APM_TEST_BRANCH_SPEC}"]], 
+                          doGenerateSubmoduleConfigurations: false, 
+                          extensions: [], 
+                          submoduleCfg: [], 
+                          userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                          url: "https://github.com/elastic/hey-apm.git"]]])
+                        }
+                      dir("${BASE_DIR}"){
+                        sh """#!${job_shell}
+                        ./script/jenkins/hey-apm-test.sh
+                        """
+                      }
+                    }  
+                  }
+              }
+            }
+          }
         
         /**
         Build the documentation and archive it.
