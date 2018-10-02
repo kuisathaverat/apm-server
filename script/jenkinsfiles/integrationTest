@@ -1,0 +1,95 @@
+library identifier: 'apm@master', 
+retriever: modernSCM(
+  [$class: 'GitSCMSource', 
+  credentialsId: 'f94e9298-83ae-417e-ba91-85c279771570', 
+  id: '37cf2c00-2cc7-482e-8c62-7bbffef475e2', 
+  remote: 'git@github.com:elastic/apm-pipeline-library.git'])
+
+pipeline {
+    agent any 
+        environment {
+      HOME = "${env.HUDSON_HOME}"
+      BASE_DIR="src/github.com/elastic/apm-server"
+      JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
+      JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
+      TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
+      NODEJS_AGENT_YAML = "tests/versions/nodejs.yml"
+      PYTHON_AGENT_YAML = "tests/versions/python.yml"
+      RUBY_AGENT_YAML = "tests/versions/ruby.yml"
+      APM_SERVER_YAML = "tests/versions/apm_server.yml"
+    }
+     
+    options {
+      timeout(time: 1, unit: 'HOURS') 
+      buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2', daysToKeepStr: '30'))
+      timestamps()
+    }
+    parameters {
+      string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
+      string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
+    }
+    stages{
+      
+      stage('Checkout Integration Tests'){
+        agent { label 'linux' }
+        steps {
+          withEnvWrapper() {
+            dir("${TEST_BASE_DIR}"){
+              checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
+                doGenerateSubmoduleConfigurations: false, 
+                extensions: [], 
+                submoduleCfg: [], 
+                userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                url: "${JOB_GIT_INTEGRATION_URL}"]]])
+            }
+            stash allowEmpty: true, name: 'source_intest'
+          }
+        }  
+      }
+      
+      /**
+        run all integration test with the commit version.
+      */
+      stage('NodeJS integration test') { 
+          agent { label 'linux' }
+
+          steps {
+            withEnvWrapper() {
+              unstash "source_intest"
+              dir("${TEST_BASE_DIR}"){
+                script {
+                  def agentType = "nodejs"
+                  def nodeVersions = readYaml(file:"${NODEJS_AGENT_YAML}")
+                  def serverVersions = readYaml(file:"${APM_SERVER_YAML}")
+                  def serverVersNoExcluded = serverVersions?.APM_SERVER.findAll{!serverVersions?.exclude?.contains(it)}
+                  def nodeVersNoExcluded = nodeVersions?.NODEJS_AGENT.findAll{!nodeVersions?.exclude?.contains(it)}
+                  serverVersNoExcluded.each{ server ->
+                    nodeVersNoExcluded.each{ agent ->
+                      def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
+                      writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
+                      
+                      sh """#!/bin/bash
+                      echo "${agent} ${server}"
+                      ./scripts/ci/versions_${agentType}.sh "${agent}" "${server}"
+                      FILE="tests/results/agent-${agentType}-version-junit"
+                      SUFFIX=\$(echo '-${agent}-${server}'|sed 's/;/_/g')
+                      sed "s/test_${agentType}/test_${agentType}\${SUFFIX}/" "\${FILE}.xml" > "\${FILE}.new"
+                      mv "\${FILE}.xml" "\${FILE}.old"
+                      mv "\${FILE}.new" "\${FILE}\${SUFFIX}.xml"
+                      """
+                    }
+                  }
+                }
+              }
+            }  
+          } 
+          post {
+            always {
+              junit(allowEmptyResults: true, 
+                keepLongStdio: true, 
+                testResults: "${TEST_BASE_DIR}/tests/results/*-junit*.xml")
+            }
+          }
+      }
+    }
+}

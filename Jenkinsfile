@@ -11,6 +11,7 @@ pipeline {
       HOME = "${env.HUDSON_HOME}"
       BASE_DIR="src/github.com/elastic/apm-server"
       JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
+      JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
     }
      
     options {
@@ -20,7 +21,7 @@ pipeline {
     }
     parameters {
       string(name: 'branch_specifier', defaultValue: "refs/heads/master", description: "the Git branch specifier to build (<branchName>, <tagName>, <commitId>, etc.)")
-      string(name: 'job_shell', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
+      string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
       string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
       string(name: 'JOB_HEY_APM_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the Hey APM test")      
       string(name: 'ELASTIC_STACK_VERSION', defaultValue: "master", description: "Elastic Stack version used for integration test (master, 6.3, 6.4, ...)")      
@@ -96,7 +97,7 @@ pipeline {
                   withEnvWrapper() {
                       unstash 'source'
                       dir("${BASE_DIR}"){  
-                        sh """#!${job_shell}
+                        sh """#!${JOB_SHELL}
                         ./script/jenkins/intake.sh
                         """
                       }
@@ -119,7 +120,7 @@ pipeline {
                   withEnvWrapper() {
                       unstash 'source'
                       dir("${BASE_DIR}"){    
-                        sh """#!${job_shell}
+                        sh """#!${JOB_SHELL}
                         ./script/jenkins/linux-build.sh
                         """
                       }
@@ -176,7 +177,7 @@ pipeline {
                     withEnvWrapper() {
                         unstash 'source'
                         dir("${BASE_DIR}"){
-                          sh """#!${job_shell}
+                          sh """#!${JOB_SHELL}
                           ./script/jenkins/linux-test.sh
                           """
                         }
@@ -272,7 +273,7 @@ pipeline {
                         unstash 'source'
                         dir("${BASE_DIR}"){  
                           copyArtifacts filter: 'bench-last.txt', fingerprintArtifacts: true, optional: true, projectName: "${JOB_NAME}", selector: lastCompleted()
-                          sh """#!${job_shell}
+                          sh """#!${JOB_SHELL}
                           go get -u golang.org/x/tools/cmd/benchcmp
                           make bench | tee bench-new.txt
                           [ -f bench-new.txt ] && cat bench-new.txt
@@ -314,6 +315,23 @@ pipeline {
             }
         }
         
+        stage('Checkout Integration Tests'){
+          agent { label 'linux' }
+          steps {
+            withEnvWrapper() {
+              dir("${TEST_BASE_DIR}"){
+                checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
+                  doGenerateSubmoduleConfigurations: false, 
+                  extensions: [], 
+                  submoduleCfg: [], 
+                  userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                  url: "${JOB_GIT_INTEGRATION_URL}"]]])
+              }
+              stash allowEmpty: true, name: 'source_intest'
+            }
+          }  
+        }
+        
         stage('Integration Tests') {
             failFast true
             when { 
@@ -323,9 +341,34 @@ pipeline {
             
             parallel {
               /**
-              TODO run integration test with the commit version.
+               run all integration test with the commit version.
               */
               stage('Integration test') { 
+                  agent { label 'linux' }
+                  steps {
+                    withEnvWrapper() {
+                      unstash "source_intest"
+                      dir("${TEST_BASE_DIR}"){
+                          sh """#!/usr/bin/env bash
+                          export COMPOSE_ARGS="${ELASTIC_STACK_VERSION} --apm-server-build ${JOB_GIT_URL}@${JOB_GIT_COMMIT} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
+                          ./scripts/ci/all.sh
+                          """
+                      }
+                    }  
+                  } 
+                  post {
+                    always {
+                      junit(allowEmptyResults: true, 
+                        keepLongStdio: true, 
+                        testResults: "${TEST_BASE_DIR}/tests/results/*-junit.xml")
+                    }
+                  }
+              }
+              
+              /**
+              TODO run integration test with the commit version.
+              */
+              stage('NodeJS integration test') { 
                   agent { label 'linux' }
                   environment {
                     TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
@@ -341,17 +384,18 @@ pipeline {
                           submoduleCfg: [], 
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "git@github.com:elastic/apm-integration-testing.git"]]])
-                          //sh """#!${job_shell}
-                          ///bin/bash ./scripts/ci/all.sh
-                          //"""
-                          
-                          sh """#!/usr/bin/env bash
-                          . ./scripts/ci/common.sh
-
-                          DEFAULT_COMPOSE_ARGS="${ELASTIC_STACK_VERSION} --apm-server-build ${JOB_GIT_URL}@${JOB_GIT_COMMIT} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
-                          export COMPOSE_ARGS=\${COMPOSE_ARGS:-\${DEFAULT_COMPOSE_ARGS}}
-                          runTests env-agent-all docker-test-all
-                          """
+                          script {
+                            def nodeVersions = readYaml(file:"${NODEJS_AGENT_YAML}")
+                            def serverVersions = readYaml(file:"${APM_SERVER_YAML}")
+                            serverVersions?.APM_SERVER.each{
+                              nodeVersions..each{
+                                sh """#!${JOB_SHELL}
+                                #/usr/bin/env bash ./scripts/ci/versions_nodejs.sh ${NODEJS_AGENT} ${APM_SERVER}
+                                echo ${NODEJS_AGENT} ${APM_SERVER}
+                                """
+                              }
+                            }
+                          }
                         //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
                         //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
                         //./scripts/ci/versions_ruby.sh $RUBY_AGENT $APM_SERVER
@@ -389,7 +433,7 @@ pipeline {
                           url: "https://github.com/elastic/hey-apm.git"]]])
                         }
                       dir("${BASE_DIR}"){
-                        sh """#!${job_shell}
+                        sh """#!${JOB_SHELL}
                         ./script/jenkins/hey-apm-test.sh
                         """
                       }
@@ -418,7 +462,7 @@ pipeline {
               withEnvWrapper() {
                   unstash 'source'
                   dir("${BASE_DIR}"){  
-                    sh """#!${job_shell}
+                    sh """#!${JOB_SHELL}
                     make docs
                     """
                   }
@@ -442,7 +486,7 @@ pipeline {
               withEnvWrapper() {
                 unstash 'source'
                 dir("${BASE_DIR}"){
-                  sh """#!${job_shell}
+                  sh """#!${JOB_SHELL}
                   ./_beats/dev-tools/jenkins_release.sh
                   """
                 }
@@ -491,7 +535,7 @@ pipeline {
               withEnvWrapper() {
                   unstash 'source'
                   dir("${BASE_DIR}"){  
-                    sh """#!${job_shell} 
+                    sh """#!${JOB_SHELL} 
                     ./script/jenkins/sync.sh
                     """
                   }
