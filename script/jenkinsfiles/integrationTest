@@ -23,38 +23,36 @@ def runIntegrationTestAxisForAgent(agentType){
 
 def runIntegrationTest(tag, agent, server, agentType){
   return {
-    stage("${tag} Running"){
-      node('linux') {
-        withEnvWrapper() {
-          deleteDir()
-          unstash "source_intest"
-          dir("${TEST_BASE_DIR}"){
-            def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
-            writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
-            
-            try {
-              echo "${tag}"
-              sh """#!/bin/bash
-              TMPDIR="${WORKSPACE}"
-              VENV="${WORKSPACE}"
-              chmod ugo+rx ./scripts/ci/*.sh
-              ./scripts/ci/${agentType}.sh "${agent}" "${server}"
-              """
-            } catch (err) {
-              echo "${err}"
-              throw err
-            } finally {
-              junit(
-                allowEmptyResults: true, 
-                keepLongStdio: true, 
-                testResults: "tests/results/*-junit*.xml")
-              deleteDir()
-            }
+    node('linux') {
+      withEnvWrapper() {
+        deleteDir()
+        unstash "source_intest"
+        dir("${TEST_BASE_DIR}"){
+          def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
+          writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
+          
+          try {
+            echo "${tag}"
+            sh """#!/bin/bash
+            TMPDIR="${WORKSPACE}"
+            VENV="${WORKSPACE}"
+            chmod ugo+rx ./scripts/ci/*.sh
+            ./scripts/ci/${agentType}.sh "${agent}" "${server}"
+            """
+          } catch (err) {
+            echo "${err}"
+            throw err
+          } finally {
+            junit(
+              allowEmptyResults: true, 
+              keepLongStdio: true, 
+              testResults: "tests/results/*-junit*.xml")
+            deleteDir()
           }
         }
       }
-    }  
-  }
+    }
+  }  
 }
 
 pipeline {
@@ -109,10 +107,10 @@ pipeline {
       }
 
       stage('Parallel Integration Tests'){
+        agent any
         failFast false
         parallel {
           stage('Server integration test') { 
-            agent any
             environment {
               COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana"
             }
@@ -127,7 +125,6 @@ pipeline {
             }
           }
           stage('Kibana integration test') { 
-            agent any
             environment {
               COMPOSE_ARGS = "master --no-apm-server-dashboards"
             }
@@ -142,7 +139,6 @@ pipeline {
             }
           }
           stage('Java integration test') { 
-            agent any
             environment {
               COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana --with-agent-java-spring --force-build --build-parallel"
             }
@@ -157,7 +153,6 @@ pipeline {
             }  
           }
           stage('Go integration test') { 
-            agent any
             environment {
               COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana --with-agent-go-net-http --force-build --build-parallel"
             }
@@ -175,7 +170,6 @@ pipeline {
         run all integration test with the commit version.
       */
       stage('NodeJS integration test') { 
-        agent any
         when { 
           beforeAgent true
           environment name: 'NodeJS_Test', value: 'true' 
@@ -193,7 +187,6 @@ pipeline {
         } 
       }
       stage('Python integration test') { 
-        agent any
         when { 
           beforeAgent true
           environment name: 'Python_Test', value: 'true' 
@@ -211,7 +204,6 @@ pipeline {
         } 
       }
       stage('Ruby integration test') { 
-        agent any
         when { 
           beforeAgent true
           environment name: 'Ruby_Test', value: 'true' 
