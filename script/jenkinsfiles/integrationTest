@@ -171,8 +171,6 @@ pipeline {
               }
             } 
           }
-        }
-      }
       /**
         run all integration test with the commit version.
       */
@@ -231,4 +229,6 @@ pipeline {
         } 
       }
     }
+  }
+}
 }
