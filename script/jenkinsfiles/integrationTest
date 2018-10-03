@@ -130,9 +130,17 @@ pipeline {
                   ./scripts/ci/server.sh
                   """
                 }
+              }
+            }
+            post {
+              always {
+                junit(
+                  allowEmptyResults: true, 
+                  keepLongStdio: true, 
+                  testResults: "${TEST_BASE_DIR}/tests/results/*-junit*.xml")
                 deleteDir()
-              }  
-            } 
+              }
+            }
           }
           stage('Kibana integration test') { 
             agent { label 'linux' }
@@ -152,7 +160,16 @@ pipeline {
                 }
                 deleteDir()
               }  
-            } 
+            }
+            post {
+              always {
+                junit(
+                  allowEmptyResults: true, 
+                  keepLongStdio: true, 
+                  testResults: "${TEST_BASE_DIR}/tests/results/*-junit*.xml")
+                deleteDir()
+              }
+            }
           }
           stage('Java integration test') { 
             agent { label 'linux' }
@@ -172,7 +189,16 @@ pipeline {
                 }
                 deleteDir()
               }  
-            } 
+            }
+            post {
+              always {
+                junit(
+                  allowEmptyResults: true, 
+                  keepLongStdio: true, 
+                  testResults: "${TEST_BASE_DIR}/tests/results/*-junit*.xml")
+                deleteDir()
+              }
+            }
           }
           stage('Go integration test') { 
             agent { label 'linux' }
@@ -192,8 +218,17 @@ pipeline {
                     """                  }
                 }
                 deleteDir()
-              }  
-            } 
+              } 
+            }
+            post {
+              always {
+                junit(
+                  allowEmptyResults: true, 
+                  keepLongStdio: true, 
+                  testResults: "${TEST_BASE_DIR}/tests/results/*-junit*.xml")
+                deleteDir()
+              }
+            }
           }
         }
       }
