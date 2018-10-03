@@ -37,6 +37,7 @@ def runIntegrationTest(tag, agent, server, agentType){
               sh """#!/bin/bash
               TMPDIR="${WORKSPACE}"
               VENV="${WORKSPACE}"
+              chmod ugo+rx ./scripts/ci/*.sh
               ./scripts/ci/${agentType}.sh "${agent}" "${server}"
               """
             } catch (err) {
@@ -101,7 +102,6 @@ pipeline {
                 submoduleCfg: [], 
                 userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                 url: "${JOB_GIT_INTEGRATION_URL}"]]])
-              sh 'chmod ugo+rx ./scripts/ci/*.sh'
             }
             stash allowEmpty: true, name: 'source_intest'
           }
@@ -112,7 +112,7 @@ pipeline {
         failFast false
         parallel {
           stage('Server integration test') { 
-            agent { label 'linux' }
+            agent any
             environment {
               COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana"
             }
@@ -127,7 +127,7 @@ pipeline {
             }
           }
           stage('Kibana integration test') { 
-            agent { label 'linux' }
+            agent any
             environment {
               COMPOSE_ARGS = "master --no-apm-server-dashboards"
             }
@@ -142,9 +142,9 @@ pipeline {
             }
           }
           stage('Java integration test') { 
-            agent { label 'linux' }
+            agent any
             environment {
-              COMPOSE_ARGS = "master  --no-apm-server-dashboards --no-kibana --with-agent-java-spring --force-build --build-parallel"
+              COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana --with-agent-java-spring --force-build --build-parallel"
             }
             when { 
               beforeAgent true
@@ -157,7 +157,7 @@ pipeline {
             }  
           }
           stage('Go integration test') { 
-            agent { label 'linux' }
+            agent any
             environment {
               COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana --with-agent-go-net-http --force-build --build-parallel"
             }
@@ -177,7 +177,7 @@ pipeline {
         run all integration test with the commit version.
       */
       stage('NodeJS integration test') { 
-        agent { label 'linux' }
+        agent any
         when { 
           beforeAgent true
           environment name: 'NodeJS_Test', value: 'true' 
@@ -195,7 +195,7 @@ pipeline {
         } 
       }
       stage('Python integration test') { 
-        agent { label 'linux' }
+        agent any
         when { 
           beforeAgent true
           environment name: 'Python_Test', value: 'true' 
@@ -213,7 +213,7 @@ pipeline {
         } 
       }
       stage('Ruby integration test') { 
-        agent { label 'linux' }
+        agent any
         when { 
           beforeAgent true
           environment name: 'Ruby_Test', value: 'true' 
