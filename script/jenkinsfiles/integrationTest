@@ -104,6 +104,7 @@ pipeline {
                 submoduleCfg: [], 
                 userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                 url: "${JOB_GIT_INTEGRATION_URL}"]]])
+              sh 'chmod ugo+rx ./scripts/ci/*.sh'
             }
             stash allowEmpty: true, name: 'source_intest'
           }
