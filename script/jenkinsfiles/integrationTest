@@ -120,8 +120,10 @@ pipeline {
               environment name: 'Server_Test', value: 'true' 
             }
             steps {
-              runIntegrationTest("Server integration test", "", "", "server").call()
-              deleteDir()
+              script {
+                runIntegrationTest("Server integration test", "", "", "server").call()
+                deleteDir()
+              }
             }
           }
           stage('Kibana integration test') { 
@@ -134,8 +136,10 @@ pipeline {
               environment name: 'Kibana_Test', value: 'true' 
             }
             steps {
-              runIntegrationTest("Kibana integration test", "", "", "kibana").call()
-              deleteDir()
+              script {
+                runIntegrationTest("Kibana integration test", "", "", "kibana").call()
+                deleteDir()
+              }
             }
           }
           stage('Java integration test') { 
@@ -148,8 +152,10 @@ pipeline {
               environment name: 'Java_Test', value: 'true' 
             }
             steps {
-              runIntegrationTest("Java integration test", "", "", "java").call()
-              deleteDir()
+              script {
+                runIntegrationTest("Java integration test", "", "", "java").call()
+                deleteDir()
+              }
             }  
           }
           stage('Go integration test') { 
@@ -162,8 +168,10 @@ pipeline {
               environment name: 'Go_Test', value: 'true' 
             }
             steps {
-              runIntegrationTest("Go integration test", "", "", "go").call()
-              deleteDir()
+              script {
+                runIntegrationTest("Go integration test", "", "", "go").call()
+                deleteDir()
+              }
             } 
           }
         }
