@@ -23,7 +23,7 @@ def runIntegrationTestAxisForAgent(agentType){
 
 def runIntegrationTest(tag, agent, server, agentType){
   return {
-    stage("${tag}"){
+    stage("${tag} Running"){
       node('linux') {
         withEnvWrapper() {
           deleteDir()
