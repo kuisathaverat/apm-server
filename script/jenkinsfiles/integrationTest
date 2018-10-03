@@ -142,9 +142,9 @@ pipeline {
         failFast false
         parallel {
           stage('Server integration test') { 
-            environment {
+            //environment {
               //COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana"
-            }
+            //}
             when { 
               beforeAgent true
               environment name: 'Server_Test', value: 'true' 
