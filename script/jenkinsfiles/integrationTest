@@ -46,7 +46,7 @@ def stepIntegrationTest(tag, agent, server, agentType){
         BUILD_OPT="${BUILD_OPT} --apm-server-build https://github.com/elastic/apm-server.git@${APM_SERVER_BRANCH}"
       fi
 
-      DEFAULT_COMPOSE_ARGS="${ELASTIC_STACK_VERSION:-"master"} --no-apm-server-dashboards --no-kibana ${BUILD_OPT}"
+      DEFAULT_COMPOSE_ARGS="${ELASTIC_STACK_VERSION:-'master'} --no-apm-server-dashboards --no-kibana ${BUILD_OPT}"
       export COMPOSE_ARGS=${COMPOSE_ARGS:-${DEFAULT_COMPOSE_ARGS}}
       runTests env-server docker-test-server
       '''
