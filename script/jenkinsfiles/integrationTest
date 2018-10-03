@@ -107,7 +107,6 @@ pipeline {
       }
 
       stage('Parallel Integration Tests'){
-        agent any
         failFast false
         parallel {
           stage('Server integration test') { 
