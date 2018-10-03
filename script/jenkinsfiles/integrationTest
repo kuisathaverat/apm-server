@@ -42,7 +42,7 @@ def stepIntegrationTest(tag, agent, server, agentType){
       test -z "$srcdir" && srcdir=.
       . ${srcdir}/common.sh
 
-      if [ ! -z "${APM_SERVER_BRANCH}"]; then
+      if [ ! -z "${APM_SERVER_BRANCH}" ]; then
         BUILD_OPT="${BUILD_OPT} --apm-server-build https://github.com/elastic/apm-server.git@${APM_SERVER_BRANCH}"
       fi
 
