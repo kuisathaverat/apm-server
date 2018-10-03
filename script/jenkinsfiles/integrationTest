@@ -142,6 +142,7 @@ pipeline {
         failFast false
         parallel {
           stage('Server integration test') { 
+            agent { label 'linux' }
             //environment {
               //COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana"
             //}
