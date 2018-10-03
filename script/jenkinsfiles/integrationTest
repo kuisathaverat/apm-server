@@ -184,6 +184,7 @@ pipeline {
                   sh """#!/bin/bash
                   TMP="${WORKSPACE}"
                   export COMPOSE_ARGS="master  --no-apm-server-dashboards --no-kibana --with-agent-java-spring --force-build --build-parallel"
+                  chmod ugo+rx ./scripts/ci/*.sh
                   ./scripts/ci/java.sh
                   """
                 }
