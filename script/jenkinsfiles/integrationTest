@@ -5,6 +5,56 @@ retriever: modernSCM(
   id: '37cf2c00-2cc7-482e-8c62-7bbffef475e2', 
   remote: 'git@github.com:elastic/apm-pipeline-library.git'])
 
+def runIntegrationTestForAgent(agentType){
+  def parallelStages = [:]
+  def ymlFiles = readJSON(text: "${YAML_FILES}")
+  def nodeVersions = readYaml(file: ymlFiles["${agentType}"])
+  def serverVersions = readYaml(file: ymlFiles["apm-server"])
+  def serverVersNoExcluded = serverVersions["APM_SERVER"]?.findAll{!serverVersions?.exclude?.contains(it)}
+  def nodeVersNoExcluded = nodeVersions["${agentType.toUpperCase()}_AGENT"]?.findAll{!nodeVersions?.exclude?.contains(it)}
+  serverVersNoExcluded.each{ server ->
+    nodeVersNoExcluded.each{ agent ->
+      def tag = "${agentType} ${agent} - Server ${server}"
+      parallelStages[tag] = runIntegrationTest(tag, agent, server, agentType)
+    }
+  }
+  parallel(parallelStages)
+}
+
+def runIntegrationTest(tag, agent, server, agentType){
+  return {
+    stage("${tag}"){
+      node('linux') {
+        withEnvWrapper() {
+          deleteDir()
+          unstash "source_intest"
+          dir("${TEST_BASE_DIR}"){
+            def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
+            writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
+            
+            try {
+              echo "${tag}"
+              sh """#!/bin/bash
+              TMP="${WORKSPACE}"
+              ./scripts/ci/versions_${agentType}.sh "${agent}" "${server}"
+              """
+            } catch (err) {
+              echo "${err}"
+              throw err
+            } finally {
+              junit(
+                allowEmptyResults: true, 
+                keepLongStdio: true, 
+                testResults: "${TEST_BASE_DIR}/tests/results/*-junit*.xml")
+              deleteDir()
+            }
+          }
+        }
+      }
+    }  
+  }
+}
+
 pipeline {
     agent any 
         environment {
@@ -17,6 +67,13 @@ pipeline {
       PYTHON_AGENT_YAML = "tests/versions/python.yml"
       RUBY_AGENT_YAML = "tests/versions/ruby.yml"
       APM_SERVER_YAML = "tests/versions/apm_server.yml"
+      YAML_FILES = """{
+        'nodejs': 'tests/versions/nodejs.yml',
+        'python': 'tests/versions/python.yml',
+        'ruby': 'tests/versions/ruby.yml',
+        'apm-server': 'tests/versions/apm_server.yml'
+      }
+      """
     }
      
     options {
@@ -27,9 +84,15 @@ pipeline {
     parameters {
       string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
       string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
+      booleanParam(name: 'Go_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'Java_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'Kibana_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'NodeJS_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'Python_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'Ruby_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'Server_Test', defaultValue: false, description: 'Enable Test')
     }
     stages{
-      
       stage('Checkout Integration Tests'){
         agent { label 'linux' }
         steps {
@@ -46,50 +109,149 @@ pipeline {
           }
         }  
       }
-      
+
+      stage('Parallel Integration Tests'){
+        failFast false
+        parallel {
+          stage('Server integration test') { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'Server_Test', value: 'true' 
+            }
+            steps {
+              withEnvWrapper() {
+                unstash "source_intest"
+                dir("${TEST_BASE_DIR}"){
+                  sh """#!/bin/bash
+                  TMP="${WORKSPACE}"
+                  export COMPOSE_ARGS="master --no-apm-server-dashboards --no-kibana"
+                  ./scripts/ci/server.sh
+                  """
+                }
+                deleteDir()
+              }  
+            } 
+          }
+          stage('Kibana integration test') { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'Kibana_Test', value: 'true' 
+            }
+            steps {
+              withEnvWrapper() {
+                unstash "source_intest"
+                dir("${TEST_BASE_DIR}"){
+                  sh """#!/bin/bash
+                  TMP="${WORKSPACE}"
+                  export COMPOSE_ARGS="master --no-apm-server-dashboards"
+                  ./scripts/ci/kibana.sh
+                  """
+                }
+                deleteDir()
+              }  
+            } 
+          }
+          stage('Java integration test') { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'Java_Test', value: 'true' 
+            }
+            steps {
+              withEnvWrapper() {
+                unstash "source_intest"
+                dir("${TEST_BASE_DIR}"){
+                  sh """#!/bin/bash
+                  TMP="${WORKSPACE}"
+                  export COMPOSE_ARGS="master  --no-apm-server-dashboards --no-kibana --with-agent-java-spring --force-build --build-parallel"
+                  ./scripts/ci/java.sh
+                  """
+                }
+                deleteDir()
+              }  
+            } 
+          }
+          stage('Go integration test') { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'Go_Test', value: 'true' 
+            }
+            steps {
+              withEnvWrapper() {
+                unstash "source_intest"
+                dir("${TEST_BASE_DIR}"){
+                  script {
+                    sh """#!/bin/bash
+                    TMP="${WORKSPACE}"
+                    export COMPOSE_ARGS="master --no-apm-server-dashboards --no-kibana --with-agent-go-net-http --force-build --build-parallel"
+                    ./scripts/ci/go.sh
+                    """                  }
+                }
+                deleteDir()
+              }  
+            } 
+          }
+        }
+      }
       /**
         run all integration test with the commit version.
       */
       stage('NodeJS integration test') { 
-          agent { label 'linux' }
-
-          steps {
-            withEnvWrapper() {
-              unstash "source_intest"
-              dir("${TEST_BASE_DIR}"){
-                script {
-                  def agentType = "nodejs"
-                  def nodeVersions = readYaml(file:"${NODEJS_AGENT_YAML}")
-                  def serverVersions = readYaml(file:"${APM_SERVER_YAML}")
-                  def serverVersNoExcluded = serverVersions?.APM_SERVER.findAll{!serverVersions?.exclude?.contains(it)}
-                  def nodeVersNoExcluded = nodeVersions?.NODEJS_AGENT.findAll{!nodeVersions?.exclude?.contains(it)}
-                  serverVersNoExcluded.each{ server ->
-                    nodeVersNoExcluded.each{ agent ->
-                      def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
-                      writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
-                      
-                      sh """#!/bin/bash
-                      echo "${agent} ${server}"
-                      ./scripts/ci/versions_${agentType}.sh "${agent}" "${server}"
-                      FILE="tests/results/agent-${agentType}-version-junit"
-                      SUFFIX=\$(echo '-${agent}-${server}'|sed 's/;/_/g')
-                      sed "s/test_${agentType}/test_${agentType}\${SUFFIX}/" "\${FILE}.xml" > "\${FILE}.new"
-                      mv "\${FILE}.xml" "\${FILE}.old"
-                      mv "\${FILE}.new" "\${FILE}\${SUFFIX}.xml"
-                      """
-                    }
-                  }
-                }
+        agent { label 'linux' }
+        when { 
+          beforeAgent true
+          environment name: 'NodeJS_Test', value: 'true' 
+        }
+        steps {
+          withEnvWrapper() {
+            unstash "source_intest"
+            dir("${TEST_BASE_DIR}"){
+              script {
+                runIntegrationTestForAgent("nodejs")
               }
-            }  
-          } 
-          post {
-            always {
-              junit(allowEmptyResults: true, 
-                keepLongStdio: true, 
-                testResults: "${TEST_BASE_DIR}/tests/results/*-junit*.xml")
             }
-          }
+            deleteDir()
+          }  
+        } 
+      }
+      stage('Python integration test') { 
+        agent { label 'linux' }
+        when { 
+          beforeAgent true
+          environment name: 'Python_Test', value: 'true' 
+        }
+        steps {
+          withEnvWrapper() {
+            unstash "source_intest"
+            dir("${TEST_BASE_DIR}"){
+              script {
+                runIntegrationTestForAgent("python")
+              }
+            }
+            deleteDir()
+          }  
+        } 
+      }
+      stage('Ruby integration test') { 
+        agent { label 'linux' }
+        when { 
+          beforeAgent true
+          environment name: 'Ruby_Test', value: 'true' 
+        }
+        steps {
+          withEnvWrapper() {
+            unstash "source_intest"
+            dir("${TEST_BASE_DIR}"){
+              script {
+                runIntegrationTestForAgent("ruby")
+              }
+            }
+            deleteDir()
+          }  
+        } 
       }
     }
 }
