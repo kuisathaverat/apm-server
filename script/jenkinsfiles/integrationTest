@@ -5,52 +5,79 @@ retriever: modernSCM(
   id: '37cf2c00-2cc7-482e-8c62-7bbffef475e2', 
   remote: 'git@github.com:elastic/apm-pipeline-library.git'])
 
-def runIntegrationTestAxisForAgent(agentType){
+def ymlFiles = [
+  nodejs: 'tests/versions/nodejs.yml',
+  python: 'tests/versions/python.yml',
+  ruby: 'tests/versions/ruby.yml',
+  server: 'tests/versions/apm_server.yml'
+]
+  
+def runIntegrationTestAxis(agentType){
   def parallelStages = [:]
-  def ymlFiles = readJSON(text: "${YAML_FILES}")
   def nodeVersions = readYaml(file: ymlFiles["${agentType}"])
-  def serverVersions = readYaml(file: ymlFiles["apm-server"])
-  def serverVersNoExcluded = serverVersions["APM_SERVER"]?.findAll{!serverVersions?.exclude?.contains(it)}
+  def elasticStackVersions = readYaml(file: ymlFiles["server"])
+  def elasticStackVersNoExcluded = elasticStackVersions["APM_SERVER"]?.findAll{!elasticStackVersions?.exclude?.contains(it)}
   def nodeVersNoExcluded = nodeVersions["${agentType.toUpperCase()}_AGENT"]?.findAll{!nodeVersions?.exclude?.contains(it)}
-  serverVersNoExcluded.each{ server ->
+  elasticStackVersNoExcluded.each{ server ->
     nodeVersNoExcluded.each{ agent ->
-      def tag = "${agentType} ${agent} - Server ${server}"
-      parallelStages[tag] = runIntegrationTest(tag, agent, server, "versions_${agentType}")
+      def tag = "${agentType} ${agent} - Elastic Stack ${server}"
+      parallelStages[tag] = nodeIntegrationTest(tag, agent, server, "versions_${agentType}")
     }
   }
   parallel(parallelStages)
 }
 
-def runIntegrationTest(tag, agent, server, agentType){
+def stepIntegrationTest(tag, agent, server, agentType){
+  withEnvWrapper() {
+    deleteDir()
+    unstash "source_intest"
+    dir("${TEST_BASE_DIR}"){
+      def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
+      writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
+      
+      def serverScript = '''
+      #!/bin/bash -e
+
+      srcdir=`dirname $0`
+      test -z "$srcdir" && srcdir=.
+      . ${srcdir}/common.sh
+
+      if [ ! -z "${APM_SERVER_BRANCH}"]; then
+        BUILD_OPT="${BUILD_OPT} --apm-server-build https://github.com/elastic/apm-server.git@${APM_SERVER_BRANCH}"
+      fi
+
+      DEFAULT_COMPOSE_ARGS="${ELASTIC_STACK_VERSION:-"master"} --no-apm-server-dashboards --no-kibana ${BUILD_OPT}"
+      export COMPOSE_ARGS=${COMPOSE_ARGS:-${DEFAULT_COMPOSE_ARGS}}
+      runTests env-server docker-test-server
+      '''
+      writeFile(file: 'scripts/ci/server.sh', text: serverScript)
+      
+      try {
+        echo "${tag}"
+        sh """#!/bin/bash
+        TMPDIR="${WORKSPACE}"
+        VENV="${WORKSPACE}"
+        chmod ugo+rx ./scripts/ci/*.sh
+        ./scripts/ci/${agentType}.sh "${agent}" "${server}"
+        """
+      } catch (err) {
+        echo "${err}"
+        throw err
+      } finally {
+        junit(
+          allowEmptyResults: true, 
+          keepLongStdio: true, 
+          testResults: "tests/results/*-junit*.xml")
+        deleteDir()
+      }
+    }
+  }
+}
+
+def nodeIntegrationTest(tag, agent, server, agentType){
   return {
     node('linux') {
-      withEnvWrapper() {
-        deleteDir()
-        unstash "source_intest"
-        dir("${TEST_BASE_DIR}"){
-          def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
-          writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
-          
-          try {
-            echo "${tag}"
-            sh """#!/bin/bash
-            TMPDIR="${WORKSPACE}"
-            VENV="${WORKSPACE}"
-            chmod ugo+rx ./scripts/ci/*.sh
-            ./scripts/ci/${agentType}.sh "${agent}" "${server}"
-            """
-          } catch (err) {
-            echo "${err}"
-            throw err
-          } finally {
-            junit(
-              allowEmptyResults: true, 
-              keepLongStdio: true, 
-              testResults: "tests/results/*-junit*.xml")
-            deleteDir()
-          }
-        }
-      }
+      stepIntegrationTest(tag, agent, server, agentType)
     }
   }  
 }
@@ -63,13 +90,14 @@ pipeline {
       JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
       JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
       TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
+      /*
       YAML_FILES = """{
         'nodejs': 'tests/versions/nodejs.yml',
         'python': 'tests/versions/python.yml',
         'ruby': 'tests/versions/ruby.yml',
         'apm-server': 'tests/versions/apm_server.yml'
       }
-      """
+      """*/
     }
      
     options {
@@ -80,6 +108,9 @@ pipeline {
     parameters {
       string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
       string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
+      string(name: 'ELASTIC_STACK_VERSION', defaultValue: "master", description: "the Git branch specifier of Elastic Stack to use")
+      string(name: 'APM_SERVER_BRANCH', defaultValue: "master", description: "the Git branch specifier of APM Server to use")
+      booleanParam(name: 'All_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Go_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Java_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Kibana_Test', defaultValue: false, description: 'Enable Test')
@@ -87,6 +118,7 @@ pipeline {
       booleanParam(name: 'Python_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Ruby_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Server_Test', defaultValue: false, description: 'Enable Test')
+      //--apm-server-build https://github.com/elastic/apm-server.git@v2
     }
     stages{
       stage('Checkout Integration Tests'){
@@ -111,7 +143,7 @@ pipeline {
         parallel {
           stage('Server integration test') { 
             environment {
-              COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana"
+              //COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana"
             }
             when { 
               beforeAgent true
@@ -119,7 +151,7 @@ pipeline {
             }
             steps {
               script {
-                runIntegrationTest("Server integration test", "", "", "server").call()
+                stepIntegrationTest("Server integration test", "", "", "server")
               }
             }
           }
@@ -133,7 +165,7 @@ pipeline {
             }
             steps {
               script {
-                runIntegrationTest("Kibana integration test", "", "", "kibana").call()
+                nodeIntegrationTest("Kibana integration test", "", "", "kibana").call()
               }
             }
           }
@@ -147,7 +179,7 @@ pipeline {
             }
             steps {
               script {
-                runIntegrationTest("Java integration test", "", "", "java").call()
+                nodeIntegrationTest("Java integration test", "", "", "java").call()
               }
             }  
           }
@@ -161,7 +193,21 @@ pipeline {
             }
             steps {
               script {
-                runIntegrationTest("Go integration test", "", "", "go").call()
+                nodeIntegrationTest("Go integration test", "", "", "go").call()
+              }
+            } 
+          }
+          stage('All integration test') { 
+            environment {
+              COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana --with-agent-go-net-http --force-build --build-parallel"
+            }
+            when { 
+              beforeAgent true
+              environment name: 'All_Test', value: 'true' 
+            }
+            steps {
+              script {
+                nodeIntegrationTest("All integration test", "", "", "all").call()
               }
             } 
           }
@@ -178,7 +224,7 @@ pipeline {
             unstash "source_intest"
             dir("${TEST_BASE_DIR}"){
               script {
-                runIntegrationTestAxisForAgent("nodejs")
+                runIntegrationTestAxis("nodejs")
               }
             }
             deleteDir()
@@ -195,7 +241,7 @@ pipeline {
             unstash "source_intest"
             dir("${TEST_BASE_DIR}"){
               script {
-                runIntegrationTestAxisForAgent("python")
+                runIntegrationTestAxis("python")
               }
             }
             deleteDir()
@@ -212,7 +258,7 @@ pipeline {
             unstash "source_intest"
             dir("${TEST_BASE_DIR}"){
               script {
-                runIntegrationTestAxisForAgent("ruby")
+                runIntegrationTestAxis("ruby")
               }
             }
             deleteDir()
