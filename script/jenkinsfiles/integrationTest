@@ -35,7 +35,8 @@ def runIntegrationTest(tag, agent, server, agentType){
             try {
               echo "${tag}"
               sh """#!/bin/bash
-              TMP="${WORKSPACE}"
+              TMPDIR="${WORKSPACE}"
+              VENV="${WORKSPACE}"
               ./scripts/ci/${agentType}.sh "${agent}" "${server}"
               """
             } catch (err) {
@@ -122,7 +123,6 @@ pipeline {
             steps {
               script {
                 runIntegrationTest("Server integration test", "", "", "server").call()
-                deleteDir()
               }
             }
           }
@@ -138,7 +138,6 @@ pipeline {
             steps {
               script {
                 runIntegrationTest("Kibana integration test", "", "", "kibana").call()
-                deleteDir()
               }
             }
           }
@@ -154,7 +153,6 @@ pipeline {
             steps {
               script {
                 runIntegrationTest("Java integration test", "", "", "java").call()
-                deleteDir()
               }
             }  
           }
@@ -170,7 +168,6 @@ pipeline {
             steps {
               script {
                 runIntegrationTest("Go integration test", "", "", "go").call()
-                deleteDir()
               }
             } 
           }

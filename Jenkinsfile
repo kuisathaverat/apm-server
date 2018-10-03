@@ -13,7 +13,9 @@ pipeline {
       JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
       JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
     }
-     
+    triggers {
+      cron('0 0 * * 1-5')
+    }
     options {
       timeout(time: 1, unit: 'HOURS') 
       buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2', daysToKeepStr: '30'))
