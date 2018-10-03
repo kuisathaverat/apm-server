@@ -148,10 +148,9 @@ pipeline {
               environment name: 'Java_Test', value: 'true' 
             }
             steps {
-                runIntegrationTest("Java integration test", "", "", "java").call()
-                deleteDir()
-              }  
-            }
+              runIntegrationTest("Java integration test", "", "", "java").call()
+              deleteDir()
+            }  
           }
           stage('Go integration test') { 
             agent { label 'linux' }
@@ -163,10 +162,9 @@ pipeline {
               environment name: 'Go_Test', value: 'true' 
             }
             steps {
-                runIntegrationTest("Go integration test", "", "", "go").call()
-                deleteDir()
-              } 
-            }
+              runIntegrationTest("Go integration test", "", "", "go").call()
+              deleteDir()
+            } 
           }
         }
       }
