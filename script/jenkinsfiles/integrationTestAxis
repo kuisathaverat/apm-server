@@ -1,0 +1,281 @@
+library identifier: 'apm@master', 
+retriever: modernSCM(
+  [$class: 'GitSCMSource', 
+  credentialsId: 'f94e9298-83ae-417e-ba91-85c279771570', 
+  id: '37cf2c00-2cc7-482e-8c62-7bbffef475e2', 
+  remote: 'git@github.com:elastic/apm-pipeline-library.git'])
+
+def ymlFiles = [
+  nodejs: 'tests/versions/nodejs.yml',
+  python: 'tests/versions/python.yml',
+  ruby: 'tests/versions/ruby.yml',
+  server: 'tests/versions/apm_server.yml'
+]
+
+def agentEnvVar = [
+  go: 'APM_AGENT_GO_PKG',
+  java: 'APM_AGENT_JAVA_PKG',
+  nodejs: 'APM_AGENT_NODEJS_PKG',
+  python: 'APM_AGENT_PYTHON_PKG',
+  ruby: 'APM_AGENT_RUBY_PKG',
+  server: 'APM_SERVER_BRANCH'
+]
+
+def agentYamlVar = [
+  go: 'GO_AGENT',
+  java: 'JAVA_AGENT',
+  nodejs: 'NODEJS_AGENT',
+  python: 'PYTHON_AGENT',
+  ruby: 'RUBY_AGENT',
+  server: 'APM_SERVER'
+]
+  
+def runIntegrationTestAxis(agentType){
+  def parallelStages = [:]
+  def nodeVersions = readYaml(file: ymlFiles["${agentType}"])
+  def elasticStackVersions = readYaml(file: ymlFiles["server"])
+  def serverKey = agentYamlVar["server"]
+  def agentKey = agentYamlVar["${agentType}"]
+  
+  def elasticStackVersNoExcluded = elasticStackVersions[serverKey]?.findAll{!elasticStackVersions?.exclude?.contains(it)}
+  def nodeVersNoExcluded = nodeVersions[agentKey]?.findAll{!nodeVersions?.exclude?.contains(it)}
+  
+  elasticStackVersNoExcluded.each{ server ->
+    nodeVersNoExcluded.each{ agent ->
+      def tag = "${agentType} ${agent}-ES:${ELASTIC_STACK_VERSION}-APM:${server}"
+      parallelStages[tag] = nodeIntegrationTest(tag, agent, server, "${agentType}")
+    }
+  }
+  parallel(parallelStages)
+}
+
+def nodeIntegrationTest(tag, agent, server, agentType){
+  return {
+//    node('linux') {
+      build(
+        job: 'apm-integration-testing-pipeline', 
+        parameters: [
+          string(name: 'JOB_SHELL', value: "${JOB_SHELL}"), 
+          string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', value: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"), 
+          string(name: 'ELASTIC_STACK_VERSION', value: "${ELASTIC_STACK_VERSION}"), 
+          string(name: 'APM_SERVER_BRANCH', value: server), /** TODO process VERSION;--release */ 
+          string(name: agentEnvVar[agentType], value: agent), 
+          string(name: 'BUILD_OPTS', value: ''), /** TODO process VERSION;--release */ 
+          booleanParam(name: "${agentType}_Test", value: true), 
+          wait: true,
+          propagate: true)
+//    }
+  }  
+}
+
+pipeline {
+    agent { label 'linux' }
+    environment {
+      HOME = "${env.HUDSON_HOME}"
+      BASE_DIR="src/github.com/elastic/apm-server"
+      JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
+      JOB_GIT_INTEGRATION_URL="git@github.com:kuisathaverat/apm-integration-testing.git"
+      INTEGRATION_TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
+    }
+     
+    options {
+      timeout(time: 1, unit: 'HOURS') 
+      buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2', daysToKeepStr: '30'))
+      timestamps()
+    }
+    parameters {
+      string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
+      string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/pipeline", description: "the Git branch specifier to make the integrations test")
+      string(name: 'ELASTIC_STACK_VERSION', defaultValue: "master", description: "the Git branch specifier of Elastic Stack to use")
+      string(name: 'APM_SERVER_BRANCH', defaultValue: "master", description: "the Git branch specifier of APM Server to use")
+      
+      string(name: 'APM_AGENT_NODEJS_PKG', defaultValue: "release;latest", description: "APM Agent NodeJS package to use, it can be a release version (release;VERSION) or build from a github branch (github;BRANCH)")
+      string(name: 'APM_AGENT_PYTHON_PKG', defaultValue: "release;latest", description: "APM Agent Python package to use, it can be a release version (release;VERSION) or build from a github branch (github;RANCH)")
+      string(name: 'APM_AGENT_RUBY_PKG', defaultValue: "release;latest", description: "APM Agent Ruby package to use, it can be a release version (release;VERSION) or build from a github branch (github;RANCH)")
+      string(name: 'APM_AGENT_JAVA_PKG', defaultValue: "master", description: "APM Agent Java package to use, it is build from a github branch (RANCH)")
+      string(name: 'APM_AGENT_GO_PKG', defaultValue: "master", description: "APM Agent Go package to use, it is build from a github branch (RANCH)")
+
+      string(name: 'BUILD_OPTS', defaultValue: "", description: "Addicional build options to passing compose.py")
+
+      booleanParam(name: 'all_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'go_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'java_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'kibana_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'nodejs_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'python_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'ruby_Test', defaultValue: false, description: 'Enable Test')
+      booleanParam(name: 'server_Test', defaultValue: false, description: 'Enable Test')
+    }
+    stages{
+      stage('Checkout Integration Tests'){
+        agent { label 'linux' }
+        steps {
+          withEnvWrapper() {
+            dir("${INTEGRATION_TEST_BASE_DIR}"){
+              checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
+                doGenerateSubmoduleConfigurations: false, 
+                extensions: [], 
+                submoduleCfg: [], 
+                userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                url: "${JOB_GIT_INTEGRATION_URL}"]]])
+            }
+            stash allowEmpty: true, name: 'source_intest'
+          }
+        }  
+      }
+
+      stage("Integration Tests"){
+        environment {
+          STAGE_STACK = "ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+          STAGE_ALL = "All-${env.STAGE_STACK}"
+          STAGE_GO = "Go ${env.APM_AGENT_GO_PKG}-${env.STAGE_STACK}"
+          STAGE_JAVA = "Java ${env.APM_AGENT_JAVA_PKG}-${env.STAGE_STACK}"
+          STAGE_KIBANA = "Kibana-${env.STAGE_STACK}"
+          STAGE_NODEJS = "Node.js ${env.APM_AGENT_NODEJS_PKG}-${env.STAGE_STACK}"
+          STAGE_PYTHON = "Python ${env.APM_AGENT_PYTHON_PKG}-${env.STAGE_STACK}"
+          STAGE_RUBY = "Ruby ${env.APM_AGENT_RUBY_PKG}-${env.STAGE_STACK}"
+          STAGE_SERVER = "Server-${env.STAGE_STACK}"
+        }
+        failFast false
+        parallel {
+          /*
+          stage("All") { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'all_Test', value: 'true' 
+            }
+            steps {
+              runIntegrationTestAxis("${STAGE_ALL}", "all")
+            } 
+          }
+          stage("Go") { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'go_Test', value: 'true' 
+            }
+            steps {
+              runIntegrationTestAxis("${STAGE_GO}", "go")
+            } 
+          }
+          stage("Java") { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'java_Test', value: 'true' 
+            }
+            steps {
+              runIntegrationTestAxis("${STAGE_JAVA}", "java")
+            }  
+          }
+          stage("Kibana") { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'kibana_Test', value: 'true' 
+            }
+            steps {
+              runIntegrationTestAxis("${STAGE_KIBANA}", "kibana")
+            }
+          }*/
+          stage("Node.js") { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'nodejs_Test', value: 'true' 
+            }
+            steps {
+              runIntegrationTestAxis("${STAGE_NODEJS}", "nodejs")
+            }
+          }
+          stage("Python") { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'python_Test', value: 'true' 
+            }
+            steps {
+              runIntegrationTestAxis("${STAGE_PYTHON}", "python")
+            }
+          }
+          stage("Ruby") { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'ruby_Test', value: 'true' 
+            }
+            steps {
+              runIntegrationTestAxis("${STAGE_RUBY}", "ruby")
+            }
+          }
+          /*
+          stage("Server") { 
+            agent { label 'linux' }
+            when { 
+              beforeAgent true
+              environment name: 'server_Test', value: 'true' 
+            }
+            steps {
+              runIntegrationTestAxis("${STAGE_SERVER}", "server")
+            }
+          }*/
+      /**
+        run all integration test with the commit version.
+      */
+      /*
+      stage('NodeJS integration test') { 
+        when { 
+          beforeAgent true
+          environment name: 'nodejs_Test', value: 'true' 
+        }
+        steps {
+          withEnvWrapper() {
+            unstash "source_intest"
+            dir("${INTEGRATION_TEST_BASE_DIR}"){
+              script {
+                runIntegrationTestAxis("nodejs")
+              }
+            }
+            deleteDir()
+          }  
+        } 
+      }
+      stage('Python integration test') { 
+        when { 
+          beforeAgent true
+          environment name: 'python_Test', value: 'true' 
+        }
+        steps {
+          withEnvWrapper() {
+            unstash "source_intest"
+            dir("${INTEGRATION_TEST_BASE_DIR}"){
+              script {
+                runIntegrationTestAxis("python")
+              }
+            }
+            deleteDir()
+          }  
+        } 
+      }
+      stage('Ruby integration test') { 
+        when { 
+          beforeAgent true
+          environment name: 'ruby_Test', value: 'true' 
+        }
+        steps {
+          withEnvWrapper() {
+            unstash "source_intest"
+            dir("${INTEGRATION_TEST_BASE_DIR}"){
+              script {
+                runIntegrationTestAxis("ruby")
+              }
+            }
+            deleteDir()
+          }  
+        } 
+      }*/
+    }
+  }
+}
+}
