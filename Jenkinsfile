@@ -20,6 +20,7 @@ pipeline {
       timeout(time: 1, unit: 'HOURS') 
       buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2', daysToKeepStr: '30'))
       timestamps()
+      preserveStashes()
     }
     parameters {
       string(name: 'branch_specifier', defaultValue: "refs/heads/master", description: "the Git branch specifier to build (<branchName>, <tagName>, <commitId>, etc.)")
@@ -246,10 +247,14 @@ pipeline {
                     withEnvWrapper() {
                         unstash 'source'
                         dir("${BASE_DIR}"){  
+                          /*
                           powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
                             --program powershell.exe `
                             --args "-NonInteractive -ExecutionPolicy ByPass -File" `
                             ".\\script\\jenkins\\windows-test.ps1"'''
+                            */
+                          bat 'dir "C:\\Program Files\\'
+                          powershell '".\\script\\jenkins\\windows-test.ps1"'
                         }
                       }
                     }
@@ -366,54 +371,7 @@ pipeline {
                     }
                   }
               }
-              
-              /**
-              TODO run integration test with the commit version.
-              */
-              stage('NodeJS integration test') { 
-                  agent { label 'linux' }
-                  environment {
-                    TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
-                  }
 
-                  steps {
-                    withEnvWrapper() {
-                      unstash 'source'
-                      dir("${TEST_BASE_DIR}"){
-                        checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
-                          doGenerateSubmoduleConfigurations: false, 
-                          extensions: [], 
-                          submoduleCfg: [], 
-                          userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
-                          url: "git@github.com:elastic/apm-integration-testing.git"]]])
-                          script {
-                            def nodeVersions = readYaml(file:"${NODEJS_AGENT_YAML}")
-                            def serverVersions = readYaml(file:"${APM_SERVER_YAML}")
-                            serverVersions?.APM_SERVER.each{
-                              nodeVersions..each{
-                                sh """#!${JOB_SHELL}
-                                #/usr/bin/env bash ./scripts/ci/versions_nodejs.sh ${NODEJS_AGENT} ${APM_SERVER}
-                                echo ${NODEJS_AGENT} ${APM_SERVER}
-                                """
-                              }
-                            }
-                          }
-                        //./scripts/ci/versions_nodejs.sh $NODEJS_AGENT $APM_SERVER
-                        //./scripts/ci/versions_python.sh $PYTHON_AGENT $APM_SERVER
-                        //./scripts/ci/versions_ruby.sh $RUBY_AGENT $APM_SERVER
-                        //./scripts/compose.py start master --apm-server-build=https://github.com/elastic/apm-server.git@v2 --force-build
-                      }
-                    }  
-                  } 
-                  post {
-                    always {
-                      junit(allowEmptyResults: true, 
-                        keepLongStdio: true, 
-                        testResults: "${TEST_BASE_DIR}/tests/results/*-junit.xml")
-                    }
-                  }
-              }
-              
               /**
                 Unit tests and apm-server stress testing.
               */
