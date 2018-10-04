@@ -61,7 +61,7 @@ def nodeIntegrationTest(tag, agent, server, agentType){
           string(name: 'APM_SERVER_BRANCH', value: server), /** TODO process VERSION;--release */ 
           string(name: agentEnvVar[agentType], value: agent), 
           string(name: 'BUILD_OPTS', value: ''), /** TODO process VERSION;--release */ 
-          booleanParam(name: "${agentType}_Test", value: true), 
+          booleanParam(name: "${agentType}_Test", value: true)], 
           wait: true,
           propagate: true)
 //    }
