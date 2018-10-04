@@ -36,16 +36,10 @@ def stepIntegrationTest(tag, agentType){
       writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
       
       try {
-        currentBuild.description = "InTest-${tag}-${ELASTIC_STACK_VERSION}-${APM_SERVER_BRANCH}"
-        echo """
-        ${tag}
-        ELASTIC_STACK_VERSION=${ELASTIC_STACK_VERSION}
-        APM_SERVER_BRANCH=${APM_SERVER_BRANCH}
-        """
-          
         sh """#!/bin/bash
-        TMPDIR="${WORKSPACE}"
-        VENV="${WORKSPACE}"
+        echo "InTest-${tag}-${ELASTIC_STACK_VERSION}-${APM_SERVER_BRANCH}"
+        export TMPDIR="${WORKSPACE}"
+        export VENV="${WORKSPACE}"
         chmod ugo+rx ./scripts/ci/*.sh
         ./scripts/ci/${agentType}.sh
         """
@@ -127,10 +121,10 @@ pipeline {
         }  
       }
 
-      stage('Parallel Integration Tests'){
+      stage("Integration Tests-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}"){
         failFast false
         parallel {
-          stage('All') { 
+          stage("All-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -142,7 +136,7 @@ pipeline {
               }
             } 
           }
-          stage('Go') { 
+          stage("Go ${APM_AGENT_GO_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -154,7 +148,7 @@ pipeline {
               }
             } 
           }
-          stage('Java') { 
+          stage("Java ${APM_AGENT_JAVA_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -166,7 +160,7 @@ pipeline {
               }
             }  
           }
-          stage('Kibana') { 
+          stage("Kibana-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -178,7 +172,7 @@ pipeline {
               }
             }
           }
-          stage('Node.js') { 
+          stage("Node.js ${APM_AGENT_NODEJS_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -190,7 +184,7 @@ pipeline {
               }
             }
           }
-          stage('Python') { 
+          stage("Python ${APM_AGENT_PYTHON_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -202,7 +196,7 @@ pipeline {
               }
             }
           }
-          stage('Ruby') { 
+          stage("Ruby ${APM_AGENT_RUBY_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -214,7 +208,7 @@ pipeline {
               }
             }
           }
-          stage('Server') { 
+          stage("Server-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
