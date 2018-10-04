@@ -125,17 +125,6 @@ pipeline {
       }
 
       stage("Integration Tests"){
-        environment {
-          STAGE_STACK = "ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
-          STAGE_ALL = "All-${env.STAGE_STACK}"
-          STAGE_GO = "Go ${env.APM_AGENT_GO_PKG}-${env.STAGE_STACK}"
-          STAGE_JAVA = "Java ${env.APM_AGENT_JAVA_PKG}-${env.STAGE_STACK}"
-          STAGE_KIBANA = "Kibana-${env.STAGE_STACK}"
-          STAGE_NODEJS = "Node.js ${env.APM_AGENT_NODEJS_PKG}-${env.STAGE_STACK}"
-          STAGE_PYTHON = "Python ${env.APM_AGENT_PYTHON_PKG}-${env.STAGE_STACK}"
-          STAGE_RUBY = "Ruby ${env.APM_AGENT_RUBY_PKG}-${env.STAGE_STACK}"
-          STAGE_SERVER = "Server-${env.STAGE_STACK}"
-        }
         failFast false
         parallel {
           /*
@@ -146,7 +135,7 @@ pipeline {
               environment name: 'all_Test', value: 'true' 
             }
             steps {
-              runIntegrationTestAxis("${STAGE_ALL}", "all")
+              runIntegrationTestAxis("all")
             } 
           }
           stage("Go") { 
@@ -156,7 +145,7 @@ pipeline {
               environment name: 'go_Test', value: 'true' 
             }
             steps {
-              runIntegrationTestAxis("${STAGE_GO}", "go")
+              runIntegrationTestAxis("go")
             } 
           }
           stage("Java") { 
@@ -166,7 +155,7 @@ pipeline {
               environment name: 'java_Test', value: 'true' 
             }
             steps {
-              runIntegrationTestAxis("${STAGE_JAVA}", "java")
+              runIntegrationTestAxis("java")
             }  
           }
           stage("Kibana") { 
@@ -176,7 +165,7 @@ pipeline {
               environment name: 'kibana_Test', value: 'true' 
             }
             steps {
-              runIntegrationTestAxis("${STAGE_KIBANA}", "kibana")
+              runIntegrationTestAxis("kibana")
             }
           }*/
           stage("Node.js") { 
@@ -186,7 +175,7 @@ pipeline {
               environment name: 'nodejs_Test', value: 'true' 
             }
             steps {
-              runIntegrationTestAxis("${STAGE_NODEJS}", "nodejs")
+              runIntegrationTestAxis("nodejs")
             }
           }
           stage("Python") { 
@@ -196,7 +185,7 @@ pipeline {
               environment name: 'python_Test', value: 'true' 
             }
             steps {
-              runIntegrationTestAxis("${STAGE_PYTHON}", "python")
+              runIntegrationTestAxis("python")
             }
           }
           stage("Ruby") { 
@@ -206,7 +195,7 @@ pipeline {
               environment name: 'ruby_Test', value: 'true' 
             }
             steps {
-              runIntegrationTestAxis("${STAGE_RUBY}", "ruby")
+              runIntegrationTestAxis("ruby")
             }
           }
           /*
@@ -217,7 +206,7 @@ pipeline {
               environment name: 'server_Test', value: 'true' 
             }
             steps {
-              runIntegrationTestAxis("${STAGE_SERVER}", "server")
+              runIntegrationTestAxis("server")
             }
           }*/
       /**
