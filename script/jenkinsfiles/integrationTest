@@ -37,9 +37,12 @@ def stepIntegrationTest(tag, agentType){
       
       try {
         currentBuild.description = "InTest-${tag}-${ELASTIC_STACK_VERSION}-${APM_SERVER_BRANCH}"
-        echo "${tag}"
-        echo "ELASTIC_STACK_VERSION=${ELASTIC_STACK_VERSION}"
-        echo "APM_SERVER_BRANCH=${APM_SERVER_BRANCH}"
+        echo """
+        ${tag}
+        ELASTIC_STACK_VERSION=${ELASTIC_STACK_VERSION}
+        APM_SERVER_BRANCH=${APM_SERVER_BRANCH}
+        """
+          
         sh """#!/bin/bash
         TMPDIR="${WORKSPACE}"
         VENV="${WORKSPACE}"
