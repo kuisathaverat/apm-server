@@ -12,6 +12,8 @@ pipeline {
       BASE_DIR="src/github.com/elastic/apm-server"
       JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
       JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
+      INTEGRATION_TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
+      HEY_APM_TEST_BASE_DIR = "src/github.com/elastic/hey-apm"
     }
     triggers {
       cron('0 0 * * 1-5')
@@ -326,7 +328,7 @@ pipeline {
           agent { label 'linux' }
           steps {
             withEnvWrapper() {
-              dir("${TEST_BASE_DIR}"){
+              dir("${INTEGRATION_TEST_BASE_DIR}"){
                 checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
                   doGenerateSubmoduleConfigurations: false, 
                   extensions: [], 
@@ -355,7 +357,7 @@ pipeline {
                   steps {
                     withEnvWrapper() {
                       unstash "source_intest"
-                      dir("${TEST_BASE_DIR}"){
+                      dir("${INTEGRATION_TEST_BASE_DIR}"){
                           sh """#!/usr/bin/env bash
                           export COMPOSE_ARGS="${ELASTIC_STACK_VERSION} --apm-server-build ${JOB_GIT_URL}@${JOB_GIT_COMMIT} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
                           ./scripts/ci/all.sh
@@ -367,7 +369,7 @@ pipeline {
                     always {
                       junit(allowEmptyResults: true, 
                         keepLongStdio: true, 
-                        testResults: "${TEST_BASE_DIR}/tests/results/*-junit.xml")
+                        testResults: "${INTEGRATION_TEST_BASE_DIR}/tests/results/*-junit.xml")
                     }
                   }
               }
@@ -377,14 +379,10 @@ pipeline {
               */
               stage('Hey APM test') { 
                   agent { label 'linux' }
-                  environment {
-                    TEST_BASE_DIR = "src/github.com/elastic/hey-apm"
-                  }
-                  
                   steps {
                     withEnvWrapper() {
                       unstash 'source'
-                      dir("${TEST_BASE_DIR}"){
+                      dir("${HEY_APM_TEST_BASE_DIR}"){
                         checkout([$class: 'GitSCM', branches: [[name: "${JOB_HEY_APM_TEST_BRANCH_SPEC}"]], 
                           doGenerateSubmoduleConfigurations: false, 
                           extensions: [], 

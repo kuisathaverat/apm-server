@@ -31,7 +31,7 @@ def stepIntegrationTest(tag, agent, server, agentType){
   withEnvWrapper() {
     deleteDir()
     unstash "source_intest"
-    dir("${TEST_BASE_DIR}"){
+    dir("${INTEGRATION_TEST_BASE_DIR}"){
       def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
       writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
       
@@ -89,7 +89,7 @@ pipeline {
       BASE_DIR="src/github.com/elastic/apm-server"
       JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
       JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
-      TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
+      INTEGRATION_TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
       /*
       YAML_FILES = """{
         'nodejs': 'tests/versions/nodejs.yml',
@@ -125,7 +125,7 @@ pipeline {
         agent { label 'linux' }
         steps {
           withEnvWrapper() {
-            dir("${TEST_BASE_DIR}"){
+            dir("${INTEGRATION_TEST_BASE_DIR}"){
               checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
                 doGenerateSubmoduleConfigurations: false, 
                 extensions: [], 
@@ -223,7 +223,7 @@ pipeline {
         steps {
           withEnvWrapper() {
             unstash "source_intest"
-            dir("${TEST_BASE_DIR}"){
+            dir("${INTEGRATION_TEST_BASE_DIR}"){
               script {
                 runIntegrationTestAxis("nodejs")
               }
@@ -240,7 +240,7 @@ pipeline {
         steps {
           withEnvWrapper() {
             unstash "source_intest"
-            dir("${TEST_BASE_DIR}"){
+            dir("${INTEGRATION_TEST_BASE_DIR}"){
               script {
                 runIntegrationTestAxis("python")
               }
@@ -257,7 +257,7 @@ pipeline {
         steps {
           withEnvWrapper() {
             unstash "source_intest"
-            dir("${TEST_BASE_DIR}"){
+            dir("${INTEGRATION_TEST_BASE_DIR}"){
               script {
                 runIntegrationTestAxis("ruby")
               }
