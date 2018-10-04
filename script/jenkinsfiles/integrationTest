@@ -73,14 +73,6 @@ pipeline {
       JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
       JOB_GIT_INTEGRATION_URL="git@github.com:kuisathaverat/apm-integration-testing.git"
       INTEGRATION_TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
-      /*
-      YAML_FILES = """{
-        'nodejs': 'tests/versions/nodejs.yml',
-        'python': 'tests/versions/python.yml',
-        'ruby': 'tests/versions/ruby.yml',
-        'apm-server': 'tests/versions/apm_server.yml'
-      }
-      """*/
     }
      
     options {
@@ -107,6 +99,8 @@ pipeline {
       string(name: 'APM_AGENT_JAVA_PKG', defaultValue: "master", description: "APM Agent Java package to use, it is build from a github branch (RANCH)")
       string(name: 'APM_AGENT_GO_PKG', defaultValue: "master", description: "APM Agent Go package to use, it is build from a github branch (RANCH)")
 
+      string(name: 'BUILD_OPTS', defaultValue: "", description: "Addicional build options to passing compose.py")
+
       booleanParam(name: 'All_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Go_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Java_Test', defaultValue: false, description: 'Enable Test')
@@ -115,7 +109,6 @@ pipeline {
       booleanParam(name: 'Python_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Ruby_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Server_Test', defaultValue: false, description: 'Enable Test')
-      //--apm-server-build https://github.com/elastic/apm-server.git@v2
     }
     stages{
       stage('Checkout Integration Tests'){
