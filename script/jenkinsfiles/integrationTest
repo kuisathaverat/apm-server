@@ -35,23 +35,6 @@ def stepIntegrationTest(tag, agent, server, agentType){
       def pytestIni = "[pytest]\njunit_suite_name = ${agentType} ${agent} ${server}\n"
       writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
       
-      def serverScript = '''
-      #!/bin/bash -e
-
-      srcdir=`dirname $0`
-      test -z "$srcdir" && srcdir=.
-      . ${srcdir}/common.sh
-
-      if [ ! -z "${APM_SERVER_BRANCH}" ]; then
-        BUILD_OPT="${BUILD_OPT} --apm-server-build https://github.com/elastic/apm-server.git@${APM_SERVER_BRANCH}"
-      fi
-
-      DEFAULT_COMPOSE_ARGS="${ELASTIC_STACK_VERSION:-'master'} --no-apm-server-dashboards --no-kibana ${BUILD_OPT}"
-      export COMPOSE_ARGS=${COMPOSE_ARGS:-${DEFAULT_COMPOSE_ARGS}}
-      runTests env-server docker-test-server
-      '''
-      writeFile(file: 'scripts/ci/server.sh', text: serverScript)
-      
       try {
         echo "${tag}"
         sh """#!/bin/bash
@@ -88,7 +71,7 @@ pipeline {
       HOME = "${env.HUDSON_HOME}"
       BASE_DIR="src/github.com/elastic/apm-server"
       JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
-      JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
+      JOB_GIT_INTEGRATION_URL="git@github.com:kuisathaverat/apm-integration-testing.git"
       INTEGRATION_TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
       /*
       YAML_FILES = """{
@@ -107,7 +90,7 @@ pipeline {
     }
     parameters {
       string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
-      string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
+      string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/pipeline", description: "the Git branch specifier to make the integrations test")
       string(name: 'ELASTIC_STACK_VERSION', defaultValue: "master", description: "the Git branch specifier of Elastic Stack to use")
       string(name: 'APM_SERVER_BRANCH', defaultValue: "master", description: "the Git branch specifier of APM Server to use")
       text(name: 'TEXT_YAML', defaultValue: """
@@ -117,6 +100,13 @@ pipeline {
         - '6.3'
         - '6.2;--release'
       """)
+      
+      string(name: 'APM_AGENT_NODEJS_PKG', defaultValue: "release;latest", description: "APM Agent NodeJS package to use, it can be a release version (release;VERSION) or build from a github branch (github;BRANCH)")
+      string(name: 'APM_AGENT_PYTHON_PKG', defaultValue: "release;latest", description: "APM Agent Python package to use, it can be a release version (release;VERSION) or build from a github branch (github;RANCH)")
+      string(name: 'APM_AGENT_RUBY_PKG', defaultValue: "release;latest", description: "APM Agent Ruby package to use, it can be a release version (release;VERSION) or build from a github branch (github;RANCH)")
+      string(name: 'APM_AGENT_JAVA_PKG', defaultValue: "master", description: "APM Agent Java package to use, it is build from a github branch (RANCH)")
+      string(name: 'APM_AGENT_GO_PKG', defaultValue: "master", description: "APM Agent Go package to use, it is build from a github branch (RANCH)")
+
       booleanParam(name: 'All_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Go_Test', defaultValue: false, description: 'Enable Test')
       booleanParam(name: 'Java_Test', defaultValue: false, description: 'Enable Test')
@@ -150,14 +140,12 @@ pipeline {
         parallel {
           stage('Server integration test') { 
             agent { label 'linux' }
-            //environment {
-              //COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana"
-            //}
             when { 
               beforeAgent true
               environment name: 'Server_Test', value: 'true' 
             }
             steps {
+              echo "Start"
               script {
                 stepIntegrationTest("Server integration test", "", "", "server")
               }
@@ -178,9 +166,6 @@ pipeline {
             }
           }
           stage('Java integration test') { 
-            environment {
-              COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana --with-agent-java-spring --force-build --build-parallel"
-            }
             when { 
               beforeAgent true
               environment name: 'Java_Test', value: 'true' 
@@ -192,9 +177,6 @@ pipeline {
             }  
           }
           stage('Go integration test') { 
-            environment {
-              COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana --with-agent-go-net-http --force-build --build-parallel"
-            }
             when { 
               beforeAgent true
               environment name: 'Go_Test', value: 'true' 
@@ -206,9 +188,6 @@ pipeline {
             } 
           }
           stage('All integration test') { 
-            environment {
-              COMPOSE_ARGS = "master --no-apm-server-dashboards --no-kibana --with-agent-go-net-http --force-build --build-parallel"
-            }
             when { 
               beforeAgent true
               environment name: 'All_Test', value: 'true' 
