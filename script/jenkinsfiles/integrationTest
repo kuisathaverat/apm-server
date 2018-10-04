@@ -110,7 +110,7 @@ pipeline {
       string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
       string(name: 'ELASTIC_STACK_VERSION', defaultValue: "master", description: "the Git branch specifier of Elastic Stack to use")
       string(name: 'APM_SERVER_BRANCH', defaultValue: "master", description: "the Git branch specifier of APM Server to use")
-      text(name: 'TEXT_YAML', defaultValue """
+      text(name: 'TEXT_YAML', defaultValue: """
       APM_SERVER:
         - master
         - '6.4'
