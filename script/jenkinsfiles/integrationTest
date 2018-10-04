@@ -32,7 +32,7 @@ def stepIntegrationTest(tag, agentType){
     deleteDir()
     unstash "source_intest"
     dir("${INTEGRATION_TEST_BASE_DIR}"){
-      def pytestIni = "[pytest]\njunit_suite_name = ${agentType}\n"
+      def pytestIni = "[pytest]\njunit_suite_name = InTest-${tag}-${ELASTIC_STACK_VERSION}-${APM_SERVER_BRANCH}\n"
       writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
       
       try {
@@ -128,6 +128,7 @@ pipeline {
         failFast false
         parallel {
           stage('All') { 
+            agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'All_Test', value: 'true' 
@@ -139,6 +140,7 @@ pipeline {
             } 
           }
           stage('Go') { 
+            agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'Go_Test', value: 'true' 
@@ -150,6 +152,7 @@ pipeline {
             } 
           }
           stage('Java') { 
+            agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'Java_Test', value: 'true' 
@@ -161,6 +164,7 @@ pipeline {
             }  
           }
           stage('Kibana') { 
+            agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'Kibana_Test', value: 'true' 
@@ -172,6 +176,7 @@ pipeline {
             }
           }
           stage('Node.js') { 
+            agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'NodeJS_Test', value: 'true' 
@@ -183,6 +188,7 @@ pipeline {
             }
           }
           stage('Python') { 
+            agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'Python_Test', value: 'true' 
@@ -194,6 +200,7 @@ pipeline {
             }
           }
           stage('Ruby') { 
+            agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'Ruby_Test', value: 'true' 
@@ -205,6 +212,7 @@ pipeline {
             }
           }
           stage('Server') { 
+            agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'Server_Test', value: 'true' 
