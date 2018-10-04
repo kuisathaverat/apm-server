@@ -121,10 +121,21 @@ pipeline {
         }  
       }
 
-      stage("Integration Tests-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}"){
+      stage("Integration Tests"){
+        environment {
+          STAGE_STACK = "ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+          STAGE_ALL = "All-${env.STAGE_STACK}"
+          STAGE_GO = "Go ${env.APM_AGENT_GO_PKG}-ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+          STAGE_JAVA = "Java ${env.APM_AGENT_JAVA_PKG}-ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+          STAGE_KIBANA = "Kibana-ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+          STAGE_NODEJS = "Node.js ${env.APM_AGENT_NODEJS_PKG}-ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+          STAGE_PYTHON = "Python ${env.APM_AGENT_PYTHON_PKG}-ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+          STAGE_RUBY = "Ruby ${env.APM_AGENT_RUBY_PKG}-ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+          STAGE_SERVER = "Server-ES:${env.ELASTIC_STACK_VERSION}-APM:${env.APM_SERVER_BRANCH}"
+        }
         failFast false
         parallel {
-          stage("All-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
+          stage("All") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -136,7 +147,7 @@ pipeline {
               }
             } 
           }
-          stage("Go ${APM_AGENT_GO_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
+          stage("Go") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -148,7 +159,7 @@ pipeline {
               }
             } 
           }
-          stage("Java ${APM_AGENT_JAVA_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
+          stage("Java") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -160,7 +171,7 @@ pipeline {
               }
             }  
           }
-          stage("Kibana-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
+          stage("Kibana") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -172,7 +183,7 @@ pipeline {
               }
             }
           }
-          stage("Node.js ${APM_AGENT_NODEJS_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
+          stage("Node.js") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -184,7 +195,7 @@ pipeline {
               }
             }
           }
-          stage("Python ${APM_AGENT_PYTHON_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
+          stage("Python") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -196,7 +207,7 @@ pipeline {
               }
             }
           }
-          stage("Ruby ${APM_AGENT_RUBY_PKG}-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
+          stage("Ruby") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
@@ -208,14 +219,14 @@ pipeline {
               }
             }
           }
-          stage("Server-ES:${ELASTIC_STACK_VERSION}-APM:${APM_SERVER_BRANCH}") { 
+          stage("Server") { 
             agent { label 'linux' }
             when { 
               beforeAgent true
               environment name: 'Server_Test', value: 'true' 
             }
             steps {
-              echo "Start"
+              println "${STAGE_SERVER}"
               script {
                 stepIntegrationTest("Server", "server")
               }
