@@ -163,7 +163,7 @@ pipeline {
                           --args "-NonInteractive -ExecutionPolicy ByPass -File" `
                           ".\\script\\jenkins\\windows-build.ps1"'''
                           */
-                          bat 'dir "C:\\Program Files\\'
+                          bat 'dir "C:\\Program Files\\java'
                           powershell '".\\script\\jenkins\\windows-build.ps1"'
                       }
                     }
@@ -268,7 +268,6 @@ pipeline {
                             --args "-NonInteractive -ExecutionPolicy ByPass -File" `
                             ".\\script\\jenkins\\windows-test.ps1"'''
                             */
-                          bat 'dir "C:\\Program Files\\'
                           powershell '".\\script\\jenkins\\windows-test.ps1"'
                         }
                       }
@@ -521,7 +520,7 @@ pipeline {
           setGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
             commitSha: "${JOB_GIT_COMMIT}",
             message: 'Build result SUCCESS.',
-            state: "success")
+            state: "SUCCESS")
       }
       aborted { 
           echo 'Aborted Post Actions'
