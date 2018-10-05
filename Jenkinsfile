@@ -338,6 +338,10 @@ pipeline {
         
         stage('Checkout Integration Tests'){
           agent { label 'master || linux' }
+          when { 
+            beforeAgent true
+            environment name: 'integration_test_ci', value: 'true' 
+          }
           steps {
             withEnvWrapper() {
               dir("${INTEGRATION_TEST_BASE_DIR}"){
@@ -517,10 +521,16 @@ pipeline {
     post { 
       success { 
           echo 'Success Post Actions'
+          updateGithubCommitStatus(
+            repoUrl: "${GIT_URL}",
+            commitSha: "${GIT_COMMIT}",
+            message: 'Build result SUCCESS.'
+          )
+          /*
           setGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
             commitSha: "${JOB_GIT_COMMIT}",
             message: 'Build result SUCCESS.',
-            state: "SUCCESS")
+            state: "SUCCESS")*/
       }
       aborted { 
           echo 'Aborted Post Actions'
