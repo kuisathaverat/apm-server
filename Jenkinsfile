@@ -75,6 +75,8 @@ pipeline {
                         env.JOB_GIT_COMMIT = getGitCommitSha()
                         
                         /** TODO enable create tag
+                        https://jenkins.io/doc/pipeline/examples/#push-git-repo
+                        
                         sh("git tag -a 'commit-${JOB_GIT_COMMIT}' -m 'Jenkins'")
                         sh('git push ${JOB_GIT_URL} --tags')
                         
@@ -155,10 +157,14 @@ pipeline {
                   withEnvWrapper() {
                       unstash 'source'
                       dir("${BASE_DIR}"){  
+                        /*
                         powershell '''java -jar "C:\\Program Files\\infra\\bin\\runbld" `
                           --program powershell.exe `
                           --args "-NonInteractive -ExecutionPolicy ByPass -File" `
                           ".\\script\\jenkins\\windows-build.ps1"'''
+                          */
+                          bat 'dir "C:\\Program Files\\'
+                          powershell '".\\script\\jenkins\\windows-build.ps1"'
                       }
                     }
                   }
