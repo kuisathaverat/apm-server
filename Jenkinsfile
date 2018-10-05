@@ -53,7 +53,7 @@ pipeline {
        Checkout the code and stash it, to use it on other stages.
       */
       stage('Checkout') { 
-          agent { label 'linux' }
+          agent { label 'master || linux' }
           environment {
             PATH = "${env.PATH}:${env.HUDSON_HOME}/go/bin/:${env.WORKSPACE}/bin"
             GOPATH = "${env.WORKSPACE}"
@@ -325,7 +325,7 @@ pipeline {
         }
         
         stage('Checkout Integration Tests'){
-          agent { label 'linux' }
+          agent { label 'master || linux' }
           steps {
             withEnvWrapper() {
               dir("${INTEGRATION_TEST_BASE_DIR}"){
@@ -504,26 +504,35 @@ pipeline {
     post { 
       success { 
           echo 'Success Post Actions'
+          setGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
+            commitSha: "${JOB_GIT_COMMIT}",
+            message: 'Build result SUCCESS.',
+            state: "success")
       }
       aborted { 
           echo 'Aborted Post Actions'
+          setGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
+            commitSha: "${JOB_GIT_COMMIT}",
+            message: 'Build result ABORTED.',
+            state: "error")
       }
       failure { 
           echo 'Failure Post Actions'
           //step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: "${NOTIFY_TO}", sendToIndividuals: false])
+          setGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
+            commitSha: "${JOB_GIT_COMMIT}",
+            message: 'Build result FAILURE.',
+            state: "failure")
       }
       unstable { 
           echo 'Unstable Post Actions'
+          setGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
+            commitSha: "${JOB_GIT_COMMIT}",
+            message: 'Build result UNSTABLE.',
+            state: "error")
       }
       always { 
           echo 'Post Actions'
-          setGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
-            commitSha: "${JOB_GIT_COMMIT}",
-            message: 'Build result.',
-            state: "SUCCESS")
-          updateGithubCommitStatus(repoUrl: "${JOB_GIT_URL}",
-            commitSha: "${JOB_GIT_COMMIT}",
-            message: 'Build result.')
       }
     }
 }

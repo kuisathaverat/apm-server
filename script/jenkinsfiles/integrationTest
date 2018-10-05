@@ -37,7 +37,7 @@ def stepIntegrationTest(tag, agentType){
 }
 
 pipeline {
-  agent { label 'linux' }
+  agent { label 'master || linux' }
   environment {
     HOME = "${env.HUDSON_HOME}"
     BASE_DIR="src/github.com/elastic/apm-server"
@@ -76,7 +76,7 @@ pipeline {
   }
   stages{
     stage('Checkout Integration Tests'){
-      agent { label 'linux' }
+      agent { label 'master || linux' }
       steps {
         withEnvWrapper() {
           dir("${INTEGRATION_TEST_BASE_DIR}"){
