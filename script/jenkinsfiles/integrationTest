@@ -5,37 +5,6 @@ retriever: modernSCM(
   id: '37cf2c00-2cc7-482e-8c62-7bbffef475e2', 
   remote: 'git@github.com:elastic/apm-pipeline-library.git'])
 
-def stepIntegrationTest(tag, agentType){
-  echoColor(text: "${tag}", colorfg: "green")
-  withEnvWrapper() {
-    deleteDir()
-    unstash "source_intest"
-    dir("${INTEGRATION_TEST_BASE_DIR}"){
-      def pytestIni = "[pytest]\njunit_suite_name = ${tag}\n"
-      writeFile(file: "pytest.ini", text: pytestIni, encoding: "UTF-8")
-      
-      try {
-        sh """#!/bin/bash
-        echo "${tag}"
-        export TMPDIR="${WORKSPACE}"
-        export VENV="${WORKSPACE}"
-        chmod ugo+rx ./scripts/ci/*.sh
-        ./scripts/ci/${agentType}.sh
-        """
-      } catch (err) {
-        echo "${err}"
-        throw err
-      } finally {
-        junit(
-          allowEmptyResults: true, 
-          keepLongStdio: true, 
-          testResults: "tests/results/*-junit*.xml")
-        deleteDir()
-      }
-    }
-  }
-}
-
 pipeline {
   agent { label 'master || linux' }
   environment {
