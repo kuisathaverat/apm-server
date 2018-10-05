@@ -73,6 +73,13 @@ pipeline {
                       script{
                         echo pwd()
                         env.JOB_GIT_COMMIT = getGitCommitSha()
+                        
+                        /** TODO enable create tag
+                        sh("git tag -a 'commit-${JOB_GIT_COMMIT}' -m 'Jenkins'")
+                        sh('git push ${JOB_GIT_URL} --tags')
+                        
+                        env.APM_SERVER_BRANCH = "commit-${JOB_GIT_COMMIT}"
+                        */
                       }
                   }
                   stash allowEmpty: true, name: 'source'
@@ -358,8 +365,9 @@ pipeline {
                     withEnvWrapper() {
                       unstash "source_intest"
                       dir("${INTEGRATION_TEST_BASE_DIR}"){
+                        /** TODO enable build APM server from commit. */
                           sh """#!/usr/bin/env bash
-                          export COMPOSE_ARGS="${ELASTIC_STACK_VERSION} --apm-server-build ${JOB_GIT_URL}@${JOB_GIT_COMMIT} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
+                          export COMPOSE_ARGS="${ELASTIC_STACK_VERSION} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
                           ./scripts/ci/all.sh
                           """
                       }
