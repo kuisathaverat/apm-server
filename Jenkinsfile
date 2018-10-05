@@ -528,13 +528,6 @@ pipeline {
     post { 
       success { 
           echo 'Success Post Actions'
-          step([
-            $class: "GitHubCommitStatusSetter",
-            reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${GIT_URL}"],
-            contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
-            errorHandlers: [[$class: 'ShallowAnyErrorHandler']],
-            statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: 'Build result SUCCESS.', state: "SUCCESS"]] ]
-            ]);
           updateGithubCommitStatus(
             repoUrl: "${GIT_URL}",
             commitSha: "${GIT_COMMIT}",

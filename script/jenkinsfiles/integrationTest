@@ -56,7 +56,8 @@ pipeline {
     string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/pipeline", description: "the Git branch specifier to make the integrations test")
     string(name: 'ELASTIC_STACK_VERSION', defaultValue: "master", description: "the Git branch specifier of Elastic Stack to use")
     string(name: 'APM_SERVER_BRANCH', defaultValue: "master", description: "the Git branch specifier of APM Server to use")
-    
+    string(name: 'DISABLE_BUILD_PARALLEL', defaultValue: "true", description: "Disable the build parallel option on compose.py, disable it is better for error detection.")
+
     string(name: 'APM_AGENT_NODEJS_PKG', defaultValue: "release;latest", description: "APM Agent NodeJS package to use, it can be a release version (release;VERSION) or build from a github branch (github;BRANCH)")
     string(name: 'APM_AGENT_PYTHON_PKG', defaultValue: "release;latest", description: "APM Agent Python package to use, it can be a release version (release;VERSION) or build from a github branch (github;RANCH)")
     string(name: 'APM_AGENT_RUBY_PKG', defaultValue: "release;latest", description: "APM Agent Ruby package to use, it can be a release version (release;VERSION) or build from a github branch (github;RANCH)")
