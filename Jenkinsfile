@@ -17,6 +17,7 @@ pipeline {
     }
     triggers {
       cron('0 0 * * 1-5')
+      githubPush()
     }
     options {
       timeout(time: 1, unit: 'HOURS') 
@@ -105,7 +106,7 @@ pipeline {
                 
                 when { 
                   beforeAgent true
-                  branch 'master' 
+                  branch 'origin/master' 
                 }
                 steps {
                   withEnvWrapper() {
@@ -511,7 +512,7 @@ pipeline {
             
             when { 
               beforeAgent true
-              branch 'master' 
+              branch 'origin/master' 
             }
             steps {
               withEnvWrapper() {
