@@ -64,17 +64,17 @@ pipeline {
               withEnvWrapper() {
                   echo "${PATH}:${HUDSON_HOME}/go/bin/:${WORKSPACE}/bin"
                   dir("${BASE_DIR}"){
-                    if(!branch_specifier){
-                      checkout scm
-                    } else {
-                      checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
-                        doGenerateSubmoduleConfigurations: false, 
-                        extensions: [], 
-                        submoduleCfg: [], 
-                        userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
-                        url: "${JOB_GIT_URL}"]]])
-                    }
                     script{
+                      if(!branch_specifier){
+                        checkout scm
+                      } else {
+                        checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
+                          doGenerateSubmoduleConfigurations: false, 
+                          extensions: [], 
+                          submoduleCfg: [], 
+                          userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                          url: "${JOB_GIT_URL}"]]])
+                      }
                       echo pwd()
                       env.JOB_GIT_COMMIT = getGitCommitSha()
                       
