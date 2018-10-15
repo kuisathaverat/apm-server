@@ -63,26 +63,30 @@ pipeline {
           steps {
               withEnvWrapper() {
                   echo "${PATH}:${HUDSON_HOME}/go/bin/:${WORKSPACE}/bin"
-                  dir("${BASE_DIR}"){      
-                    checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
-                      doGenerateSubmoduleConfigurations: false, 
-                      extensions: [], 
-                      submoduleCfg: [], 
-                      userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
-                      url: "${JOB_GIT_URL}"]]])
-                      script{
-                        echo pwd()
-                        env.JOB_GIT_COMMIT = getGitCommitSha()
-                        
-                        /** TODO enable create tag
-                        https://jenkins.io/doc/pipeline/examples/#push-git-repo
-                        
-                        sh("git tag -a 'commit-${JOB_GIT_COMMIT}' -m 'Jenkins'")
-                        sh('git push ${JOB_GIT_URL} --tags')
-                        
-                        env.APM_SERVER_BRANCH = "commit-${JOB_GIT_COMMIT}"
-                        */
-                      }
+                  dir("${BASE_DIR}"){
+                    if(!branch_specifier){
+                      checkout scm
+                    } else {
+                      checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
+                        doGenerateSubmoduleConfigurations: false, 
+                        extensions: [], 
+                        submoduleCfg: [], 
+                        userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
+                        url: "${JOB_GIT_URL}"]]])
+                    }
+                    script{
+                      echo pwd()
+                      env.JOB_GIT_COMMIT = getGitCommitSha()
+                      
+                      /** TODO enable create tag
+                      https://jenkins.io/doc/pipeline/examples/#push-git-repo
+                      
+                      sh("git tag -a 'commit-${JOB_GIT_COMMIT}' -m 'Jenkins'")
+                      sh('git push ${JOB_GIT_URL} --tags')
+                      
+                      env.APM_SERVER_BRANCH = "commit-${JOB_GIT_COMMIT}"
+                      */
+                    }
                   }
                   stash allowEmpty: true, name: 'source'
                   sh "export"
