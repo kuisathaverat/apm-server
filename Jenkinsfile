@@ -110,7 +110,7 @@ pipeline {
                 
                 when { 
                   beforeAgent true
-                  branch 'origin/master' 
+                  branch 'master' 
                 }
                 steps {
                   withEnvWrapper() {
@@ -516,7 +516,7 @@ pipeline {
             
             when { 
               beforeAgent true
-              branch 'origin/master' 
+              branch 'master' 
             }
             steps {
               withEnvWrapper() {
