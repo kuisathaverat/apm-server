@@ -62,7 +62,6 @@ pipeline {
           
           steps {
               withEnvWrapper() {
-                  sh "export"
                   echo "${PATH}:${HUDSON_HOME}/go/bin/:${WORKSPACE}/bin"
                   dir("${BASE_DIR}"){      
                     checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
@@ -86,6 +85,7 @@ pipeline {
                       }
                   }
                   stash allowEmpty: true, name: 'source'
+                  sh "export"
               }
           }
       }
