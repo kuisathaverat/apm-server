@@ -64,8 +64,8 @@ pipeline {
     }
 
     stage("Integration Tests"){
-      failFast false
-      parallel {
+      //failFast false
+      //parallel {
         stage("Go") { 
           agent { label 'linux' }
           when { 
@@ -116,7 +116,7 @@ pipeline {
             runIntegrationTestAxis("ruby")
           }
         }
-      }
+      //}
     }
   }
 }

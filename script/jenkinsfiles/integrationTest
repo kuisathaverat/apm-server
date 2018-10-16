@@ -62,8 +62,8 @@ pipeline {
           stash allowEmpty: true, name: 'source_intest'
           script {
             if(env.BUILD_DESCRIPTION){
-              currentBuild.displayName = "${BUILD_DESCRIPTION}"
-              currentBuild.description = "${BUILD_DESCRIPTION}"
+              currentBuild.displayName = "${currentBuild.displayName} ${BUILD_DESCRIPTION}"
+              currentBuild.description = "${currentBuild.description} ${BUILD_DESCRIPTION}"
             }
           }
         }
