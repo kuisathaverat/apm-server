@@ -32,7 +32,7 @@ pipeline {
       string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
       string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
       string(name: 'JOB_HEY_APM_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the Hey APM test")      
-      string(name: 'ELASTIC_STACK_VERSION', defaultValue: "6.x", description: "Elastic Stack version used for integration test (master, 6.3, 6.4, ...)")      
+      string(name: 'ELASTIC_STACK_VERSION', defaultValue: "6.4", description: "Elastic Stack version used for integration test (master, 6.3, 6.4, ...)")      
 
       string(name: 'NODEJS_AGENT_YAML', defaultValue: "tests/versions/nodejs.yml", description: "") 
       string(name: 'PYTHON_AGENT_YAML', defaultValue: "tests/versions/python.yml", description: "")      
