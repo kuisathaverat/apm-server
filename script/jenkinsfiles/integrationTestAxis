@@ -67,7 +67,7 @@ pipeline {
       //failFast false
       //parallel {
         stage("Go") { 
-          agent { label 'linux' }
+          //agent { label 'linux' }
           when { 
             beforeAgent true
             environment name: 'go_Test', value: 'true' 
@@ -77,7 +77,7 @@ pipeline {
           } 
         }
         stage("Java") { 
-          agent { label 'linux' }
+          //agent { label 'linux' }
           when { 
             beforeAgent true
             environment name: 'java_Test', value: 'true' 
@@ -87,7 +87,7 @@ pipeline {
           }  
         }
         stage("Node.js") { 
-          agent { label 'linux' }
+          //agent { label 'linux' }
           when { 
             beforeAgent true
             environment name: 'nodejs_Test', value: 'true' 
@@ -97,7 +97,7 @@ pipeline {
           }
         }
         stage("Python") { 
-          agent { label 'linux' }
+          //agent { label 'linux' }
           when { 
             beforeAgent true
             environment name: 'python_Test', value: 'true' 
@@ -107,7 +107,7 @@ pipeline {
           }
         }
         stage("Ruby") { 
-          agent { label 'linux' }
+          //agent { label 'linux' }
           when { 
             beforeAgent true
             environment name: 'ruby_Test', value: 'true' 
