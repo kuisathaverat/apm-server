@@ -476,7 +476,7 @@ pipeline {
                 unstash 'source'
                 dir("${BASE_DIR}"){
                   sh """#!${JOB_SHELL}
-                  ./_beats/dev-tools/jenkins_release.sh
+                  ./script/jenkins/package.sh
                   """
                 }
               }  
