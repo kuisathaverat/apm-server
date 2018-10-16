@@ -20,6 +20,7 @@ package utility
 import (
 	"encoding/json"
 	"reflect"
+	"time"
 
 	"github.com/elastic/beats/libbeat/common"
 )
@@ -44,6 +45,12 @@ func Add(m common.MapStr, key string, val interface{}) {
 	case *int:
 		if value != nil {
 			m[key] = *value
+		} else {
+			delete(m, key)
+		}
+	case *int64:
+		if newVal := val.(*int64); newVal != nil {
+			m[key] = *newVal
 		} else {
 			delete(m, key)
 		}
@@ -158,6 +165,16 @@ func MillisAsMicros(ms float64) common.MapStr {
 	return m
 }
 
+func TimeAsMicros(t time.Time) common.MapStr {
+	if t.IsZero() {
+		return nil
+	}
+
+	m := common.MapStr{}
+	m["us"] = t.UnixNano() / 1000
+	return m
+}
+
 func Prune(m common.MapStr) common.MapStr {
 	for k, v := range m {
 		if v == nil {
@@ -165,4 +182,10 @@ func Prune(m common.MapStr) common.MapStr {
 		}
 	}
 	return m
+}
+
+func AddId(fields common.MapStr, key string, id *string) {
+	if id != nil && *id != "" {
+		fields[key] = common.MapStr{"id": *id}
+	}
 }

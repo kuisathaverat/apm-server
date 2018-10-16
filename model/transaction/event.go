@@ -21,13 +21,16 @@ import (
 	"errors"
 	"time"
 
-	"github.com/elastic/beats/libbeat/beat"
-	"github.com/elastic/beats/libbeat/monitoring"
+	"github.com/santhosh-tekuri/jsonschema"
 
 	"github.com/elastic/apm-server/model/span"
+	"github.com/elastic/apm-server/model/transaction/generated/schema"
 	"github.com/elastic/apm-server/transform"
 	"github.com/elastic/apm-server/utility"
+	"github.com/elastic/apm-server/validation"
+	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
+	"github.com/elastic/beats/libbeat/monitoring"
 )
 
 const (
@@ -41,8 +44,16 @@ var (
 	spanCounter     = monitoring.NewInt(Metrics, "spans")
 	transformations = monitoring.NewInt(Metrics, "transformations")
 
-	processorTransEntry = common.MapStr{"name": processorName, "event": transactionDocType}
+	processorEntry = common.MapStr{"name": processorName, "event": transactionDocType}
 )
+
+var (
+	cachedModelSchema = validation.CreateSchema(schema.ModelSchema, "transaction")
+)
+
+func ModelSchema() *jsonschema.Schema {
+	return cachedModelSchema
+}
 
 type Event struct {
 	Id        string
@@ -55,54 +66,93 @@ type Event struct {
 	Marks     common.MapStr
 	Sampled   *bool
 	SpanCount SpanCount
-	Spans     []*span.Span
+
+	//v2
+	ParentId *string
+	TraceId  string
+
+	// deprecated in V2
+	Spans []*span.Event
+
+	v2Event bool
 }
 type SpanCount struct {
-	Dropped Dropped
-}
-type Dropped struct {
-	Total *int
+	Dropped *int
+	Started *int
 }
 
-func DecodeEvent(input interface{}, err error) (transform.Transformable, error) {
-	if input == nil || err != nil {
+func V1DecodeEvent(input interface{}, err error) (transform.Transformable, error) {
+	e, raw, err := decodeEvent(input, err)
+	if err != nil {
 		return nil, err
 	}
-	raw, ok := input.(map[string]interface{})
-	if !ok {
-		return nil, errors.New("Invalid type for transaction event")
-	}
 	decoder := utility.ManualDecoder{}
-	e := Event{
-		Id:        decoder.String(raw, "id"),
-		Type:      decoder.String(raw, "type"),
-		Name:      decoder.StringPtr(raw, "name"),
-		Result:    decoder.StringPtr(raw, "result"),
-		Duration:  decoder.Float64(raw, "duration"),
-		Timestamp: decoder.TimeRFC3339WithDefault(raw, "timestamp"),
-		Context:   decoder.MapStr(raw, "context"),
-		Marks:     decoder.MapStr(raw, "marks"),
-		Sampled:   decoder.BoolPtr(raw, "sampled"),
-		SpanCount: SpanCount{Dropped: Dropped{Total: decoder.IntPtr(raw, "total", "span_count", "dropped")}},
+	e.Timestamp = decoder.TimeRFC3339(raw, "timestamp")
+
+	e.SpanCount = SpanCount{Dropped: decoder.IntPtr(raw, "total", "span_count", "dropped")}
+
+	var transformable transform.Transformable
+	spans := decoder.InterfaceArr(raw, "spans")
+	if len(spans) > 0 {
+		e.Spans = make([]*span.Event, len(spans))
 	}
 	err = decoder.Err
-	var sp *span.Span
-	spans := decoder.InterfaceArr(raw, "spans")
-	e.Spans = make([]*span.Span, len(spans))
 	for idx, rawSpan := range spans {
-		sp, err = span.DecodeSpan(rawSpan, err)
+		transformable, err = span.V1DecodeEvent(rawSpan, err)
+		sp, ok := transformable.(*span.Event)
+		if ok {
+			if sp.Timestamp.IsZero() {
+				sp.Timestamp = e.Timestamp
+			}
 
-		if sp.Timestamp.IsZero() {
-			sp.Timestamp = e.Timestamp
-		}
-
-		if sp.TransactionId == "" {
-			sp.TransactionId = e.Id
+			if sp.TransactionId == "" {
+				sp.TransactionId = e.Id
+			}
 		}
 
 		e.Spans[idx] = sp
 	}
-	return &e, err
+	return e, err
+}
+
+func V2DecodeEvent(input interface{}, err error) (transform.Transformable, error) {
+	e, raw, err := decodeEvent(input, err)
+	if err != nil {
+		return nil, err
+	}
+	e.v2Event = true
+	decoder := utility.ManualDecoder{}
+	e.Timestamp = decoder.TimeEpochMicro(raw, "timestamp")
+	e.SpanCount = SpanCount{Dropped: decoder.IntPtr(raw, "dropped", "span_count"),
+		Started: decoder.IntPtr(raw, "started", "span_count")}
+	e.ParentId = decoder.StringPtr(raw, "parent_id")
+	e.TraceId = decoder.String(raw, "trace_id")
+	return e, decoder.Err
+}
+
+func decodeEvent(input interface{}, err error) (*Event, map[string]interface{}, error) {
+	if err != nil {
+		return nil, nil, err
+	}
+	if input == nil {
+		return nil, nil, errors.New("Input missing for decoding Event")
+	}
+	raw, ok := input.(map[string]interface{})
+	if !ok {
+		return nil, nil, errors.New("Invalid type for transaction event")
+	}
+	decoder := utility.ManualDecoder{}
+	e := Event{
+		Id:       decoder.String(raw, "id"),
+		Type:     decoder.String(raw, "type"),
+		Name:     decoder.StringPtr(raw, "name"),
+		Result:   decoder.StringPtr(raw, "result"),
+		Duration: decoder.Float64(raw, "duration"),
+		Context:  decoder.MapStr(raw, "context"),
+		Marks:    decoder.MapStr(raw, "marks"),
+		Sampled:  decoder.BoolPtr(raw, "sampled"),
+	}
+	return &e, raw, decoder.Err
 }
 
 func (t *Event) fields(tctx *transform.Context) common.MapStr {
@@ -119,13 +169,16 @@ func (t *Event) fields(tctx *transform.Context) common.MapStr {
 		utility.Add(tx, "sampled", t.Sampled)
 	}
 
-	if t.SpanCount.Dropped.Total != nil {
-		s := common.MapStr{
-			"dropped": common.MapStr{
-				"total": *t.SpanCount.Dropped.Total,
-			},
+	if t.SpanCount.Dropped != nil || t.SpanCount.Started != nil {
+		spanCount := common.MapStr{}
+
+		if t.SpanCount.Dropped != nil {
+			utility.Add(spanCount, "dropped", common.MapStr{"total": *t.SpanCount.Dropped})
 		}
-		utility.Add(tx, "span_count", s)
+		if t.SpanCount.Started != nil {
+			utility.Add(spanCount, "started", *t.SpanCount.Started)
+		}
+		utility.Add(tx, "span_count", spanCount)
 	}
 	return tx
 }
@@ -133,15 +186,24 @@ func (t *Event) fields(tctx *transform.Context) common.MapStr {
 func (e *Event) Transform(tctx *transform.Context) []beat.Event {
 	transformations.Inc()
 	events := []beat.Event{}
-	ev := beat.Event{
-		Fields: common.MapStr{
-			"processor":        processorTransEntry,
-			transactionDocType: e.fields(tctx),
-			"context":          tctx.Metadata.Merge(e.Context),
-		},
-		Timestamp: e.Timestamp,
+
+	if e.Timestamp.IsZero() {
+		e.Timestamp = tctx.RequestTime
 	}
-	events = append(events, ev)
+
+	fields := common.MapStr{
+		"processor":        processorEntry,
+		transactionDocType: e.fields(tctx),
+		"context":          tctx.Metadata.Merge(e.Context),
+	}
+	utility.AddId(fields, "parent", e.ParentId)
+	utility.AddId(fields, "trace", &e.TraceId)
+
+	if e.v2Event {
+		utility.Add(fields, "timestamp", utility.TimeAsMicros(e.Timestamp))
+	}
+
+	events = append(events, beat.Event{Fields: fields, Timestamp: e.Timestamp})
 
 	spanCounter.Add(int64(len(e.Spans)))
 	for spIdx := 0; spIdx < len(e.Spans); spIdx++ {

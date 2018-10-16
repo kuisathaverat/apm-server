@@ -32,10 +32,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/elastic/apm-agent-go"
+	"github.com/elastic/apm-server/publish"
 	"github.com/elastic/apm-server/tests/loader"
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
@@ -67,6 +69,7 @@ func TestBeatConfig(t *testing.T) {
 				"max_unzipped_size":      64,
 				"max_request_queue_time": 9 * time.Second,
 				"max_header_size":        8,
+				"max_event_size":         100,
 				"read_timeout":           3 * time.Second,
 				"write_timeout":          4 * time.Second,
 				"shutdown_timeout":       9 * time.Second,
@@ -83,8 +86,12 @@ func TestBeatConfig(t *testing.T) {
 					"url":     "/debug/vars",
 				},
 				"frontend": map[string]interface{}{
-					"enabled":       true,
-					"rate_limit":    1000,
+					"enabled":    true,
+					"rate_limit": 1000,
+					"event_rate": map[string]interface{}{
+						"limit":    7200,
+						"lru_size": 2000,
+					},
 					"allow_origins": []string{"example*"},
 					"source_mapping": map[string]interface{}{
 						"cache": map[string]interface{}{
@@ -113,6 +120,7 @@ func TestBeatConfig(t *testing.T) {
 				MaxUnzippedSize:     64,
 				MaxRequestQueueTime: 9 * time.Second,
 				MaxHeaderSize:       8,
+				MaxEventSize:        100,
 				ReadTimeout:         3000000000,
 				WriteTimeout:        4000000000,
 				ShutdownTimeout:     9000000000,
@@ -124,8 +132,12 @@ func TestBeatConfig(t *testing.T) {
 					Url:     "/debug/vars",
 				},
 				FrontendConfig: &rumConfig{
-					Enabled:      &truthy,
-					RateLimit:    1000,
+					Enabled:   &truthy,
+					RateLimit: 1000,
+					EventRate: &eventRate{
+						Limit:   7200,
+						LruSize: 2000,
+					},
 					AllowOrigins: []string{"example*"},
 					SourceMapping: &SourceMapping{
 						Cache:        &Cache{Expiration: 8 * time.Minute},
@@ -136,8 +148,12 @@ func TestBeatConfig(t *testing.T) {
 					beatVersion:         "6.2.0",
 				},
 				RumConfig: &rumConfig{
-					Enabled:      &truthy,
-					RateLimit:    1000,
+					Enabled:   &truthy,
+					RateLimit: 1000,
+					EventRate: &eventRate{
+						Limit:   7200,
+						LruSize: 2000,
+					},
 					AllowOrigins: []string{"example*"},
 					SourceMapping: &SourceMapping{
 						Cache:        &Cache{Expiration: 8 * time.Minute},
@@ -178,6 +194,9 @@ func TestBeatConfig(t *testing.T) {
 				"frontend": map[string]interface{}{
 					"enabled":    true,
 					"rate_limit": 890,
+					"event_rate": map[string]interface{}{
+						"lru_size": 200,
+					},
 					"source_mapping": map[string]interface{}{
 						"cache": map[string]interface{}{
 							"expiration": 4,
@@ -206,6 +225,7 @@ func TestBeatConfig(t *testing.T) {
 				MaxUnzippedSize:     64,
 				MaxRequestQueueTime: 2 * time.Second,
 				MaxHeaderSize:       1048576,
+				MaxEventSize:        307200,
 				ReadTimeout:         30000000000,
 				WriteTimeout:        30000000000,
 				ShutdownTimeout:     5000000000,
@@ -219,6 +239,10 @@ func TestBeatConfig(t *testing.T) {
 				FrontendConfig: &rumConfig{
 					Enabled:   &truthy,
 					RateLimit: 890,
+					EventRate: &eventRate{
+						Limit:   300,
+						LruSize: 200,
+					},
 					SourceMapping: &SourceMapping{
 						Cache: &Cache{
 							Expiration: 4 * time.Second,
@@ -231,8 +255,12 @@ func TestBeatConfig(t *testing.T) {
 					beatVersion:         "6.2.0",
 				},
 				RumConfig: &rumConfig{
-					Enabled:      &truthy,
-					RateLimit:    10,
+					Enabled:   &truthy,
+					RateLimit: 10,
+					EventRate: &eventRate{
+						Limit:   300,
+						LruSize: 1000,
+					},
 					AllowOrigins: []string{"*"},
 					SourceMapping: &SourceMapping{
 						Cache: &Cache{
@@ -308,6 +336,7 @@ func DummyPipeline(clients ...outputs.Client) *pipeline.Pipeline {
 	}
 	p, err := pipeline.New(
 		beat.Info{Name: "test-apm-server"},
+		pipeline.Monitors{},
 		nil,
 		func(e queue.Eventer) (queue.Queue, error) {
 			return memqueue.NewBroker(nil, memqueue.Settings{
@@ -393,6 +422,8 @@ func (bt *beater) smapElasticsearchHosts() []string {
 }
 
 func setupBeater(t *testing.T, publisher beat.Pipeline, ucfg *common.Config, beatConfig *beat.BeatConfig) (*beater, func(), error) {
+	beatId, err := uuid.NewV4()
+	require.NoError(t, err)
 	// create a beat
 	apmBeat := &beat.Beat{
 		Publisher: publisher,
@@ -400,7 +431,7 @@ func setupBeater(t *testing.T, publisher beat.Pipeline, ucfg *common.Config, bea
 			Beat:        "test-apm-server",
 			IndexPrefix: "test-apm-server",
 			Version:     version.GetDefaultVersion(),
-			UUID:        uuid.NewV4(),
+			UUID:        beatId,
 		},
 		Config: beatConfig,
 	}
@@ -436,7 +467,7 @@ func setupBeater(t *testing.T, publisher beat.Pipeline, ucfg *common.Config, bea
 
 func SetupServer(b *testing.B) *http.ServeMux {
 	pip := DummyPipeline()
-	pub, err := newPublisher(pip, 1, time.Duration(0), elasticapm.DefaultTracer)
+	pub, err := publish.NewPublisher(pip, 1, time.Duration(0), elasticapm.DefaultTracer)
 	if err != nil {
 		b.Fatal("error initializing publisher", err)
 	}

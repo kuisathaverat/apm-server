@@ -36,11 +36,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/elastic/apm-server/publish"
 	"github.com/elastic/apm-server/tests/loader"
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/outputs/transport/transptest"
-	publishertesting "github.com/elastic/beats/libbeat/publisher/testing"
 )
 
 var tmpCertPath string
@@ -71,6 +71,20 @@ func TestServerOk(t *testing.T) {
 	baseUrl, client := apm.client(false)
 	req := makeTransactionRequest(t, baseUrl)
 	req.Header.Add("Content-Type", "application/json")
+	res, err := client.Do(req)
+	assert.NoError(t, err)
+
+	assert.Equal(t, http.StatusAccepted, res.StatusCode, body(t, res))
+}
+
+func TestServerOkV2(t *testing.T) {
+	apm, teardown, err := setupServer(t, nil, nil)
+	require.NoError(t, err)
+	defer teardown()
+
+	baseUrl, client := apm.client(false)
+	req := makeTransactionV2Request(t, baseUrl)
+	req.Header.Add("Content-Type", "application/x-ndjson")
 	res, err := client.Do(req)
 	assert.NoError(t, err)
 
@@ -236,10 +250,16 @@ func TestServerRumSwitch(t *testing.T) {
 	defer teardown()
 
 	baseUrl, client := apm.client(false)
-	req, err := http.NewRequest("POST", baseUrl+RumTransactionsURL, bytes.NewReader(testData))
-	assert.NoError(t, err)
-	res, err := client.Do(req)
-	assert.NotEqual(t, http.StatusForbidden, res.StatusCode, body(t, res))
+
+	for _, url := range []string{
+		RumTransactionsURL,
+		V2RumURL,
+	} {
+		req, err := http.NewRequest("POST", baseUrl+url, bytes.NewReader(testData))
+		assert.NoError(t, err)
+		res, err := client.Do(req)
+		assert.NotEqual(t, http.StatusForbidden, res.StatusCode, body(t, res))
+	}
 }
 
 func TestServerCORS(t *testing.T) {
@@ -290,12 +310,21 @@ func TestServerCORS(t *testing.T) {
 		apm, teardown, err = setupServer(t, ucfg, nil)
 		require.NoError(t, err)
 		baseUrl, client := apm.client(false)
-		req, err := http.NewRequest("POST", baseUrl+RumTransactionsURL, bytes.NewReader(testData))
-		req.Header.Set("Origin", test.origin)
-		req.Header.Set("Content-Type", "application/json")
-		assert.NoError(t, err)
-		res, err := client.Do(req)
-		assert.Equal(t, test.expectedStatus, res.StatusCode, fmt.Sprintf("Failed at idx %v; %s", idx, body(t, res)))
+
+		for _, endpoint := range []struct {
+			url, contentType string
+			testData         []byte
+		}{
+			{RumTransactionsURL, "application/json", testData},
+			{V2RumURL, "application/x-ndjson", testDataV2},
+		} {
+			req, err := http.NewRequest("POST", baseUrl+endpoint.url, bytes.NewReader(endpoint.testData))
+			req.Header.Set("Origin", test.origin)
+			req.Header.Set("Content-Type", endpoint.contentType)
+			assert.NoError(t, err)
+			res, err := client.Do(req)
+			assert.Equal(t, test.expectedStatus, res.StatusCode, fmt.Sprintf("Failed at idx %v; %s", idx, body(t, res)))
+		}
 		teardown()
 	}
 }
@@ -307,6 +336,18 @@ func TestServerNoContentType(t *testing.T) {
 
 	baseUrl, client := apm.client(false)
 	req := makeTransactionRequest(t, baseUrl)
+	res, error := client.Do(req)
+	assert.NoError(t, error)
+	assert.Equal(t, http.StatusBadRequest, res.StatusCode, body(t, res))
+}
+
+func TestServerNoContentTypeV2(t *testing.T) {
+	apm, teardown, err := setupServer(t, nil, nil)
+	require.NoError(t, err)
+	defer teardown()
+
+	baseUrl, client := apm.client(false)
+	req := makeTransactionV2Request(t, baseUrl)
 	res, error := client.Do(req)
 	assert.NoError(t, error)
 	assert.Equal(t, http.StatusBadRequest, res.StatusCode, body(t, res))
@@ -475,111 +516,6 @@ func TestServerSecureBadPassphrase(t *testing.T) {
 
 }
 
-func TestServerTracingEnabled(t *testing.T) {
-	events, teardown := setupTestServerInstrumentation(t, true)
-	defer teardown()
-
-	txEvents := transactionEvents(events)
-	var selfTransactions []string
-	for len(selfTransactions) < 2 {
-		select {
-		case e := <-txEvents:
-			name := eventTransactionName(e)
-			if name == "GET /api/types" {
-				continue
-			}
-			selfTransactions = append(selfTransactions, name)
-		case <-time.After(5 * time.Second):
-			assert.FailNow(t, "timed out waiting for transaction")
-		}
-	}
-	assert.Contains(t, selfTransactions, "POST "+BackendTransactionsURL)
-	assert.Contains(t, selfTransactions, "ProcessPending")
-
-	// We expect no more events, i.e. no recursive self-tracing.
-	for {
-		select {
-		case e := <-txEvents:
-			assert.FailNowf(t, "unexpected event", "%v", e)
-		case <-time.After(time.Second):
-			return
-		}
-	}
-}
-
-func TestServerTracingDisabled(t *testing.T) {
-	events, teardown := setupTestServerInstrumentation(t, false)
-	defer teardown()
-
-	txEvents := transactionEvents(events)
-	for {
-		select {
-		case e := <-txEvents:
-			assert.Equal(t, "GET /api/types", eventTransactionName(e))
-		case <-time.After(time.Second):
-			return
-		}
-	}
-}
-
-func eventTransactionName(event beat.Event) string {
-	transaction := event.Fields["transaction"].(common.MapStr)
-	return transaction["name"].(string)
-}
-
-func transactionEvents(events <-chan beat.Event) <-chan beat.Event {
-	out := make(chan beat.Event, 1)
-	go func() {
-		defer close(out)
-		for event := range events {
-			processor := event.Fields["processor"].(common.MapStr)
-			if processor["event"] == "transaction" {
-				out <- event
-			}
-		}
-	}()
-	return out
-}
-
-// setupTestServerInstrumentation sets up a beater with or without instrumentation enabled,
-// and returns a channl to which events are published, and a function to be
-// called to teardown the beater. The initial onboarding event is consumed
-// and a transactions request is made before returning.
-func setupTestServerInstrumentation(t *testing.T, enabled bool) (chan beat.Event, func()) {
-	if testing.Short() {
-		t.Skip("skipping server test")
-	}
-
-	os.Setenv("ELASTIC_APM_FLUSH_INTERVAL", "100ms")
-	defer os.Unsetenv("ELASTIC_APM_FLUSH_INTERVAL")
-
-	events := make(chan beat.Event, 10)
-	pubClient := publishertesting.NewChanClientWith(events)
-	pub := publishertesting.PublisherWithClient(pubClient)
-
-	cfg, err := common.NewConfigFrom(m{
-		"instrumentation": m{"enabled": enabled},
-		"host":            "localhost:0",
-	})
-	assert.NoError(t, err)
-	beater, teardown, err := setupBeater(t, pub, cfg, nil)
-	require.NoError(t, err)
-
-	// onboarding event
-	e := <-events
-	assert.Contains(t, e.Fields, "listening")
-
-	// Send a transaction request so we have something to trace.
-	baseUrl, client := beater.client(false)
-	req := makeTransactionRequest(t, baseUrl)
-	req.Header.Add("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	assert.NoError(t, err)
-	resp.Body.Close()
-
-	return events, teardown
-}
-
 func setupServer(t *testing.T, cfg *common.Config, beatConfig *beat.BeatConfig) (*beater, func(), error) {
 	if testing.Short() {
 		t.Skip("skipping server test")
@@ -608,6 +544,14 @@ var testData = func() []byte {
 	return d
 }()
 
+var testDataV2 = func() []byte {
+	b, err := loader.LoadDataAsBytes("../testdata/intake-v2/transactions.ndjson")
+	if err != nil {
+		panic(err)
+	}
+	return b
+}()
+
 func withSSL(t *testing.T, domain, passphrase string) *common.Config {
 	name := path.Join(tmpCertPath, t.Name())
 	t.Log("generating certificate in", name)
@@ -626,6 +570,15 @@ func withSSL(t *testing.T, domain, passphrase string) *common.Config {
 
 func makeTransactionRequest(t *testing.T, baseUrl string) *http.Request {
 	req, err := http.NewRequest("POST", baseUrl+BackendTransactionsURL, bytes.NewReader(testData))
+	if err != nil {
+		t.Fatalf("Failed to create test request object: %v", err)
+	}
+
+	return req
+}
+
+func makeTransactionV2Request(t *testing.T, baseUrl string) *http.Request {
+	req, err := http.NewRequest("POST", baseUrl+V2BackendURL, bytes.NewReader(testDataV2))
 	if err != nil {
 		t.Fatalf("Failed to create test request object: %v", err)
 	}
@@ -658,4 +611,4 @@ func body(t *testing.T, response *http.Response) string {
 	return string(body)
 }
 
-func nopReporter(context.Context, pendingReq) error { return nil }
+func nopReporter(context.Context, publish.PendingReq) error { return nil }

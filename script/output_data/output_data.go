@@ -24,11 +24,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/elastic/beats/libbeat/beat"
-
 	"github.com/elastic/apm-server/beater"
 	"github.com/elastic/apm-server/tests/loader"
 	"github.com/elastic/apm-server/transform"
+	"github.com/elastic/beats/libbeat/beat"
 )
 
 func main() {
@@ -43,7 +42,7 @@ func main() {
 func generate() error {
 	var checked = map[string]struct{}{}
 
-	for _, mapping := range beater.ProcessorRoutes {
+	for _, mapping := range beater.V1Routes {
 
 		data, err := loader.LoadData(filepath.Join("..", "testdata", mapping.Processor.Name(), "payload.json"))
 		if err != nil {

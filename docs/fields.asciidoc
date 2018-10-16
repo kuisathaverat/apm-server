@@ -60,6 +60,22 @@ Processor event.
 --
 
 [float]
+== timestamp fields
+
+None
+
+
+*`timestamp.us`*::
++
+--
+type: long
+
+Timestamp of the event in microseconds since Unix epoch.
+
+
+--
+
+[float]
 == context fields
 
 Any arbitrary contextual information regarding the event, captured by the agent, optionally provided by the user.
@@ -471,7 +487,29 @@ type: keyword
 
 format: url
 
-A UUID4 transaction ID.
+The transaction ID.
+
+
+--
+
+
+*`trace.id`*::
++
+--
+type: keyword
+
+The ID of the trace to which the event belongs to.
+
+
+--
+
+
+*`parent.id`*::
++
+--
+type: keyword
+
+The ID of the parent event.
 
 
 --
@@ -512,7 +550,7 @@ Data captured by an agent representing an event occurring in a monitored service
 --
 type: keyword
 
-A UUID for the error.
+The ID of the error.
 
 
 --
@@ -695,7 +733,17 @@ format: url
 --
 type: long
 
-A locally unique ID of the span.
+Deprecated (>= 6.5). A locally unique ID of the span.
+
+
+--
+
+*`span.hex_id`*::
++
+--
+type: keyword
+
+The ID of the span, introduced (>= 6.5).
 
 
 --
@@ -759,7 +807,7 @@ Duration of the span, in microseconds.
 --
 type: long
 
-The locally unique ID of the parent of the span.
+Deprecated (>= 6.5). The locally unique ID of the parent of the span.
 
 
 --
@@ -944,26 +992,6 @@ Error fields containing additional info in case of errors.
 
 
 
-*`error.message`*::
-+
---
-type: text
-
-Error message.
-
-
---
-
-*`error.code`*::
-+
---
-type: long
-
-Error code.
-
-
---
-
 *`error.type`*::
 +
 --
@@ -1101,92 +1129,12 @@ Info collected for the host machine.
 
 
 
-*`host.name`*::
-+
---
-type: keyword
-
-Hostname.
-
-
---
-
-*`host.id`*::
-+
---
-type: keyword
-
-Unique host id.
-
-
---
-
-*`host.architecture`*::
-+
---
-type: keyword
-
-Host architecture (e.g. x86_64, arm, ppc, mips).
-
-
---
-
-*`host.os.platform`*::
-+
---
-type: keyword
-
-OS platform (e.g. centos, ubuntu, windows).
-
-
---
-
-*`host.os.version`*::
-+
---
-type: keyword
-
-OS version.
-
-
---
-
-*`host.os.family`*::
-+
---
-type: keyword
-
-OS family (e.g. redhat, debian, freebsd, windows).
-
-
---
-
 *`host.os.kernel`*::
 +
 --
 type: keyword
 
 The operating system's kernel version.
-
-
---
-
-*`host.ip`*::
-+
---
-type: ip
-
-List of IP-addresses.
-
-
---
-
-*`host.mac`*::
-+
---
-type: keyword
-
-List of hardware-addresses, usually MAC-addresses.
 
 
 --

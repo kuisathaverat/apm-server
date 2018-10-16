@@ -25,8 +25,9 @@ import (
 
 var (
 	Processor = &processor.EventsProcessor{
-		PluralName:    "transactions",
-		EventDecoder:  transaction.DecodeEvent,
+		EventName:     "transaction",
+		PayloadKey:    "transactions",
+		EventDecoder:  transaction.V1DecodeEvent,
 		PayloadSchema: transaction.PayloadSchema(),
 		DecodingCount: monitoring.NewInt(transaction.Metrics, "decoding.count"),
 		DecodingError: monitoring.NewInt(transaction.Metrics, "decoding.errors"),

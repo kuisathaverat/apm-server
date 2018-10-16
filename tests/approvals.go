@@ -26,8 +26,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/elastic/beats/libbeat/beat"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/yudai/gojsondiff"
@@ -35,11 +33,35 @@ import (
 	"github.com/elastic/apm-server/processor"
 	"github.com/elastic/apm-server/tests/loader"
 	"github.com/elastic/apm-server/transform"
+	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
 )
 
 const ApprovedSuffix = ".approved.json"
 const ReceivedSuffix = ".received.json"
+
+func AssertApproveResult(t *testing.T, name string, actualResult []byte) {
+	var resultmap map[string]interface{}
+	err := json.Unmarshal(actualResult, &resultmap)
+	require.NoError(t, err)
+
+	verifyErr := ApproveJson(resultmap, name, map[string]string{})
+	if verifyErr != nil {
+		assert.Fail(t, fmt.Sprintf("Test %s failed with error: %s", name, verifyErr.Error()))
+	}
+}
+
+func ApproveEvents(events []beat.Event, name string, ignored map[string]string) error {
+	// extract Fields and write to received.json
+	eventFields := make([]common.MapStr, len(events))
+	for idx, event := range events {
+		eventFields[idx] = event.Fields
+		eventFields[idx]["@timestamp"] = event.Timestamp
+	}
+
+	receivedJson := map[string]interface{}{"events": eventFields}
+	return ApproveJson(receivedJson, name, ignored)
+}
 
 func ApproveJson(received map[string]interface{}, name string, ignored map[string]string) error {
 	cwd, _ := os.Getwd()
@@ -48,7 +70,6 @@ func ApproveJson(received map[string]interface{}, name string, ignored map[strin
 
 	r, _ := json.MarshalIndent(received, "", "    ")
 	ioutil.WriteFile(receivedPath, r, 0644)
-
 	received, _, diff, err := Compare(path, ignored)
 	if err != nil {
 		return err
@@ -133,16 +154,7 @@ func TestProcessRequests(t *testing.T, p processor.Processor, tctx transform.Con
 		for _, transformable := range payload {
 			events = append(events, transformable.Transform(&tctx)...)
 		}
-
-		// extract Fields and write to received.json
-		eventFields := make([]common.MapStr, len(events))
-		for idx, event := range events {
-			eventFields[idx] = event.Fields
-			eventFields[idx]["@timestamp"] = event.Timestamp
-		}
-
-		receivedJson := map[string]interface{}{"events": eventFields}
-		verifyErr := ApproveJson(receivedJson, info.Name, ignored)
+		verifyErr := ApproveEvents(events, info.Name, ignored)
 		if verifyErr != nil {
 			assert.Fail(t, fmt.Sprintf("Test %s failed with error: %s", info.Name, verifyErr.Error()))
 		}

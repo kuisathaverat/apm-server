@@ -18,22 +18,20 @@
 package beater
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
-	"regexp"
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/elastic/apm-agent-go"
 	"github.com/elastic/apm-agent-go/transport"
 	"github.com/elastic/apm-server/ingest/pipeline"
 	"github.com/elastic/apm-server/pipelistener"
+	"github.com/elastic/apm-server/publish"
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
@@ -51,18 +49,11 @@ type beater struct {
 // Creates beater
 func New(b *beat.Beat, ucfg *common.Config) (beat.Beater, error) {
 	logger := logp.NewLogger("beater")
-	beaterConfig := defaultConfig(b.Info.Version)
-	if err := ucfg.Unpack(beaterConfig); err != nil {
-		return nil, errors.Wrap(err, "Error processing configuration")
+	beaterConfig, err := NewConfig(b.Info.Version, ucfg)
+	if err != nil {
+		return nil, err
 	}
-	beaterConfig.SetRumConfig()
 	if beaterConfig.RumConfig.isEnabled() {
-		if _, err := regexp.Compile(beaterConfig.RumConfig.LibraryPattern); err != nil {
-			return nil, errors.New(fmt.Sprintf("Invalid regex for `library_pattern`: %v", err.Error()))
-		}
-		if _, err := regexp.Compile(beaterConfig.RumConfig.ExcludeFromGrouping); err != nil {
-			return nil, errors.New(fmt.Sprintf("Invalid regex for `exclude_from_grouping`: %v", err.Error()))
-		}
 		if b.Config != nil && beaterConfig.RumConfig.SourceMapping.EsConfig == nil {
 			// fall back to elasticsearch output configuration for sourcemap storage if possible
 			if isElasticsearchOutput(b) {
@@ -135,10 +126,12 @@ func (bt *beater) Run(b *beat.Beat) error {
 	if err != nil {
 		return err
 	}
-	defer traceListener.Close()
+	if traceListener != nil {
+		defer traceListener.Close()
+	}
 	defer tracer.Close()
 
-	pub, err := newPublisher(b.Publisher, bt.config.ConcurrentRequests, bt.config.ShutdownTimeout, tracer)
+	pub, err := publish.NewPublisher(b.Publisher, bt.config.ConcurrentRequests, bt.config.ShutdownTimeout, tracer)
 	if err != nil {
 		return err
 	}
@@ -150,7 +143,7 @@ func (bt *beater) Run(b *beat.Beat) error {
 		return nil
 	}
 
-	go notifyListening(bt.config, pub.client.Publish)
+	go notifyListening(bt.config, pub.Client().Publish)
 
 	bt.mutex.Lock()
 	if bt.stopped {
@@ -165,7 +158,7 @@ func (bt *beater) Run(b *beat.Beat) error {
 	g.Go(func() error {
 		return run(bt.server, lis, bt.config)
 	})
-	if bt.config.SelfInstrumentation.isEnabled() {
+	if traceListener != nil {
 		g.Go(func() error {
 			return bt.server.Serve(traceListener)
 		})
@@ -192,11 +185,28 @@ func initTracer(info beat.Info, config *Config, logger *logp.Logger) (*elasticap
 	if err != nil {
 		return nil, nil, err
 	}
-	if config.SelfInstrumentation.isEnabled() {
-		if config.SelfInstrumentation.Environment != nil {
-			tracer.Service.Environment = *config.SelfInstrumentation.Environment
+	// tracing disabled, setup complete
+	if !config.SelfInstrumentation.isEnabled() {
+		return tracer, nil, nil
+	}
+
+	if config.SelfInstrumentation.Environment != nil {
+		tracer.Service.Environment = *config.SelfInstrumentation.Environment
+	}
+	tracer.SetLogger(logp.NewLogger("tracing"))
+
+	// tracing destined for external host
+	// only first host used until https://github.com/elastic/apm-agent-go/issues/200
+	if config.SelfInstrumentation.Hosts != nil {
+		t, err := transport.NewHTTPTransport(config.SelfInstrumentation.Hosts[0], config.SelfInstrumentation.SecretToken)
+		if err != nil {
+			tracer.Close()
+			return nil, nil, err
 		}
-		tracer.SetLogger(logp.NewLogger("tracing"))
+		tracer.Transport = t
+		logger.Infof("self instrumentation directed to %s", config.SelfInstrumentation.Hosts[0])
+
+		return tracer, nil, nil
 	}
 
 	// Create an in-process net.Listener for the tracer. This enables us to:

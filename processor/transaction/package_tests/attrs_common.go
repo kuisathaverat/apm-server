@@ -28,7 +28,7 @@ type val = []interface{}
 
 func procSetup() *tests.ProcessorSetup {
 	return &tests.ProcessorSetup{
-		Proc:            transaction.Processor,
+		Proc:            &tests.V1TestProcessor{Processor: transaction.Processor},
 		FullPayloadPath: "../testdata/transaction/payload.json",
 		TemplatePaths: []string{"../../../model/transaction/_meta/fields.yml",
 			"../../../model/span/_meta/fields.yml",
@@ -39,13 +39,15 @@ func procSetup() *tests.ProcessorSetup {
 
 func payloadAttrsNotInFields(s *tests.Set) *tests.Set {
 	return tests.Union(s, tests.NewSet("span.stacktrace", tests.Group("transaction.marks."), tests.Group("context.db"),
-		"context.http", "context.http.url"))
+		"context.http", "context.http.url"),
+	)
 }
 
 func fieldsNotInPayloadAttrs(s *tests.Set) *tests.Set {
 	return tests.Union(s, tests.NewSet(
 		"listening", "view spans", "context.user.user-agent",
-		"context.user.ip", "context.system.ip"))
+		"context.user.ip", "context.system.ip",
+		tests.Group("timestamp")))
 }
 
 func payloadAttrsNotInJsonSchema(s *tests.Set) *tests.Set {
@@ -64,7 +66,9 @@ func payloadAttrsNotInJsonSchema(s *tests.Set) *tests.Set {
 }
 
 func jsonSchemaNotInPayloadAttrs(s *tests.Set) *tests.Set {
-	return s
+	return tests.Union(s, tests.NewSet(
+		"transactions.spans.transaction_id",
+	))
 }
 
 func requiredKeys(s *tests.Set) *tests.Set {
@@ -96,8 +100,8 @@ func condRequiredKeys(c map[string]tests.Condition) map[string]tests.Condition {
 
 func keywordExceptionKeys(s *tests.Set) *tests.Set {
 	return tests.Union(s, tests.NewSet(
-		"processor.event", "processor.name", "listening",
-		"transaction.id", "transaction.marks", "context.tags"))
+		"processor.event", "processor.name", "listening", "parent.id", "trace.id",
+		"transaction.id", "transaction.marks", "context.tags", "span.hex_id"))
 }
 
 func templateToSchemaMapping(mapping map[string]string) map[string]string {

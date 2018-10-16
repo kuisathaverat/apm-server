@@ -28,11 +28,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/elastic/beats/libbeat/beat"
+	"github.com/santhosh-tekuri/jsonschema"
 
 	m "github.com/elastic/apm-server/model"
+	"github.com/elastic/apm-server/model/error/generated/schema"
 	"github.com/elastic/apm-server/transform"
 	"github.com/elastic/apm-server/utility"
+	"github.com/elastic/apm-server/validation"
+	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/monitoring"
 )
@@ -50,25 +53,33 @@ const (
 	errorDocType  = "error"
 )
 
+var cachedModelSchema = validation.CreateSchema(schema.ModelSchema, processorName)
+
+func ModelSchema() *jsonschema.Schema {
+	return cachedModelSchema
+}
+
 type Event struct {
 	Id        *string
 	Culprit   *string
 	Context   common.MapStr
 	Timestamp time.Time
 
-	Exception   *Exception
-	Log         *Log
-	Transaction *Transaction
+	Exception *Exception
+	Log       *Log
 
-	data common.MapStr
-}
+	TransactionId *string
 
-type Transaction struct {
-	Id string
+	//v2
+	TraceId  *string
+	ParentId *string
+
+	data    common.MapStr
+	v2Event bool
 }
 
 type Exception struct {
-	Message    string
+	Message    *string
 	Module     *string
 	Code       interface{}
 	Attributes interface{}
@@ -85,37 +96,62 @@ type Log struct {
 	Stacktrace   m.Stacktrace
 }
 
-func DecodeEvent(input interface{}, err error) (transform.Transformable, error) {
-	if input == nil || err != nil {
+func V1DecodeEvent(input interface{}, err error) (transform.Transformable, error) {
+	e, raw, err := decodeEvent(input, err)
+	if err != nil {
 		return nil, err
+	}
+	decoder := utility.ManualDecoder{}
+	e.Timestamp = decoder.TimeRFC3339(raw, "timestamp")
+	e.TransactionId = decoder.StringPtr(raw, "id", "transaction")
+	return e, decoder.Err
+}
+
+func V2DecodeEvent(input interface{}, err error) (transform.Transformable, error) {
+	e, raw, err := decodeEvent(input, err)
+	if err != nil {
+		return nil, err
+	}
+	e.v2Event = true
+
+	decoder := utility.ManualDecoder{}
+	e.Timestamp = decoder.TimeEpochMicro(raw, "timestamp")
+	e.TransactionId = decoder.StringPtr(raw, "transaction_id")
+	e.ParentId = decoder.StringPtr(raw, "parent_id")
+	e.TraceId = decoder.StringPtr(raw, "trace_id")
+	return e, decoder.Err
+}
+
+func decodeEvent(input interface{}, err error) (*Event, map[string]interface{}, error) {
+	if err != nil {
+		return nil, nil, err
+	}
+	if input == nil {
+		return nil, nil, errors.New("Input missing for decoding Event")
 	}
 	raw, ok := input.(map[string]interface{})
 	if !ok {
-		return nil, errors.New("Invalid type for error event")
+		return nil, nil, errors.New("Invalid type for error event")
 	}
 	decoder := utility.ManualDecoder{}
 	e := Event{
-		Id:        decoder.StringPtr(raw, "id"),
-		Culprit:   decoder.StringPtr(raw, "culprit"),
-		Context:   decoder.MapStr(raw, "context"),
-		Timestamp: decoder.TimeRFC3339WithDefault(raw, "timestamp"),
-	}
-	transactionId := decoder.StringPtr(raw, "id", "transaction")
-	if transactionId != nil {
-		e.Transaction = &Transaction{Id: *transactionId}
+		Id:      decoder.StringPtr(raw, "id"),
+		Culprit: decoder.StringPtr(raw, "culprit"),
+		Context: decoder.MapStr(raw, "context"),
 	}
 
 	var stacktr *m.Stacktrace
 	err = decoder.Err
 	ex := decoder.MapStr(raw, "exception")
 	exMsg := decoder.StringPtr(ex, "message")
-	if exMsg != nil {
+	exType := decoder.StringPtr(ex, "type")
+	if exMsg != nil || exType != nil {
 		e.Exception = &Exception{
-			Message:    *exMsg,
+			Message:    exMsg,
+			Type:       exType,
 			Code:       decoder.Interface(ex, "code"),
 			Module:     decoder.StringPtr(ex, "module"),
 			Attributes: decoder.Interface(ex, "attributes"),
-			Type:       decoder.StringPtr(ex, "type"),
 			Handled:    decoder.BoolPtr(ex, "handled"),
 			Stacktrace: m.Stacktrace{},
 		}
@@ -140,7 +176,7 @@ func DecodeEvent(input interface{}, err error) (transform.Transformable, error) 
 			e.Log.Stacktrace = *stacktr
 		}
 	}
-	return &e, err
+	return &e, raw, err
 }
 
 func (e *Event) Transform(tctx *transform.Context) []beat.Event {
@@ -158,9 +194,15 @@ func (e *Event) Transform(tctx *transform.Context) []beat.Event {
 		"context":   tctx.Metadata.Merge(e.Context),
 		"processor": processorEntry,
 	}
+	utility.AddId(fields, "transaction", e.TransactionId)
+	utility.AddId(fields, "parent", e.ParentId)
+	utility.AddId(fields, "trace", e.TraceId)
 
-	if e.Transaction != nil && e.Transaction.Id != "" {
-		fields["transaction"] = common.MapStr{"id": e.Transaction.Id}
+	if e.v2Event {
+		if e.Timestamp.IsZero() {
+			e.Timestamp = tctx.RequestTime
+		}
+		utility.Add(fields, "timestamp", utility.TimeAsMicros(e.Timestamp))
 	}
 
 	return []beat.Event{
@@ -320,7 +362,7 @@ func (e *Event) calcGroupingKey() string {
 	}
 	if k.empty {
 		if e.Exception != nil {
-			k.add(&e.Exception.Message)
+			k.add(e.Exception.Message)
 		} else if e.Log != nil {
 			k.add(&e.Log.Message)
 		}

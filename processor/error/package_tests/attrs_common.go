@@ -28,7 +28,7 @@ type val = []interface{}
 
 func procSetup() *tests.ProcessorSetup {
 	return &tests.ProcessorSetup{
-		Proc:            perr.Processor,
+		Proc:            &tests.V1TestProcessor{Processor: perr.Processor},
 		FullPayloadPath: "../testdata/error/payload.json",
 		TemplatePaths: []string{"../../../model/error/_meta/fields.yml",
 			"../../../_meta/fields.common.yml"},
@@ -38,7 +38,8 @@ func procSetup() *tests.ProcessorSetup {
 
 func payloadAttrsNotInFields(s *tests.Set) *tests.Set {
 	return tests.Union(s, tests.NewSet(
-		"error.exception.attributes",
+		tests.Group("error.exception.attributes"),
+
 		"error.exception.stacktrace",
 		"error.log.stacktrace",
 	))
@@ -48,6 +49,7 @@ func fieldsNotInPayloadAttrs(s *tests.Set) *tests.Set {
 	return tests.Union(s, tests.NewSet(
 		"listening", "view errors", "error id icon",
 		"context.user.user-agent", "context.user.ip", "context.system.ip",
+		tests.Group("timestamp"),
 	))
 }
 
@@ -68,8 +70,11 @@ func payloadAttrsNotInJsonSchema(s *tests.Set) *tests.Set {
 func requiredKeys(s *tests.Set) *tests.Set {
 	return tests.Union(s, tests.NewSet(
 		"errors",
-		"errors.exception.message",
+		"errors.log",
+		"errors.exception",
 		"errors.log.message",
+		"errors.exception.message",
+		"errors.exception.type",
 		"errors.exception.stacktrace.filename",
 		"errors.exception.stacktrace.lineno",
 		"errors.log.stacktrace.filename",
@@ -81,8 +86,10 @@ func requiredKeys(s *tests.Set) *tests.Set {
 
 func condRequiredKeys(c map[string]tests.Condition) map[string]tests.Condition {
 	base := map[string]tests.Condition{
-		"errors.exception": tests.Condition{Absence: []string{"errors.log"}},
-		"errors.log":       tests.Condition{Absence: []string{"errors.exception"}},
+		"errors.exception":         tests.Condition{Absence: []string{"errors.log"}},
+		"errors.exception.message": tests.Condition{Absence: []string{"errors.exception.type"}},
+		"errors.exception.type":    tests.Condition{Absence: []string{"errors.exception.message"}},
+		"errors.log":               tests.Condition{Absence: []string{"errors.exception"}},
 	}
 	for k, v := range c {
 		base[k] = v
@@ -93,7 +100,7 @@ func condRequiredKeys(c map[string]tests.Condition) map[string]tests.Condition {
 func keywordExceptionKeys(s *tests.Set) *tests.Set {
 	return tests.Union(s, tests.NewSet(
 		"processor.event", "processor.name", "listening", "error.grouping_key",
-		"error.id", "transaction.id", "context.tags",
+		"error.id", "transaction.id", "context.tags", "parent.id", "trace.id",
 		"view errors", "error id icon"))
 }
 
@@ -106,6 +113,7 @@ func templateToSchemaMapping(mapping map[string]string) map[string]string {
 		"context.user.":    "errors.context.user.",
 		"span.":            "errors.spans.",
 		"error.":           "errors.",
+		"trace.id":         "errors.trace.id",
 	}
 }
 

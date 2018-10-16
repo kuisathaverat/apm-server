@@ -33,7 +33,7 @@ import (
 	"github.com/elastic/beats/libbeat/monitoring"
 )
 
-type Reader func(req *http.Request) (io.ReadCloser, error)
+type ReqReader func(req *http.Request) (io.ReadCloser, error)
 type ReqDecoder func(req *http.Request) (map[string]interface{}, error)
 
 var (
@@ -65,67 +65,66 @@ func (mr monitoringReader) Close() error {
 
 func DecodeLimitJSONData(maxSize int64) ReqDecoder {
 	return func(req *http.Request) (map[string]interface{}, error) {
-		reader, err := readRequestJSONData(maxSize)(req)
-		if err != nil {
-			return nil, err
-		}
-		return DecodeJSONData(monitoringReader{reader})
-	}
-}
-
-// readRequestJSONData makes a function that uses information from an http request to construct a Limited ReadCloser
-// of json data from the body of the request
-func readRequestJSONData(maxSize int64) Reader {
-	return func(req *http.Request) (io.ReadCloser, error) {
 		contentType := req.Header.Get("Content-Type")
 		if !strings.Contains(contentType, "application/json") {
 			return nil, fmt.Errorf("invalid content type: %s", req.Header.Get("Content-Type"))
 		}
 
-		reader := req.Body
-		if reader == nil {
-			return nil, errors.New("no content")
+		reader, err := CompressedRequestReader(req)
+		if err != nil {
+			return nil, err
 		}
-
-		cLen := req.ContentLength
-		knownCLen := cLen > -1
-		if !knownCLen {
-			missingContentLengthCounter.Inc()
-		}
-		switch req.Header.Get("Content-Encoding") {
-		case "deflate":
-			if knownCLen {
-				deflateLengthAccumulator.Add(cLen)
-				deflateCounter.Inc()
-			}
-			var err error
-			reader, err = zlib.NewReader(reader)
-			if err != nil {
-				return nil, err
-			}
-
-		case "gzip":
-			if knownCLen {
-				gzipLengthAccumulator.Add(cLen)
-				gzipCounter.Inc()
-			}
-			var err error
-			reader, err = gzip.NewReader(reader)
-			if err != nil {
-				return nil, err
-			}
-		default:
-			if knownCLen {
-				uncompressedLengthAccumulator.Add(cLen)
-				uncompressedCounter.Inc()
-			}
-		}
-		readerCounter.Inc()
-		return http.MaxBytesReader(nil, reader, maxSize), nil
+		reader = http.MaxBytesReader(nil, reader, maxSize)
+		return DecodeJSONData(monitoringReader{reader})
 	}
 }
 
-func DecodeJSONData(reader io.ReadCloser) (map[string]interface{}, error) {
+// CompressedRequestReader returns a reader that will decompress
+// the body according to the supplied Content-Encoding header in the request
+func CompressedRequestReader(req *http.Request) (io.ReadCloser, error) {
+	reader := req.Body
+	if reader == nil {
+		return nil, errors.New("no content")
+	}
+
+	cLen := req.ContentLength
+	knownCLen := cLen > -1
+	if !knownCLen {
+		missingContentLengthCounter.Inc()
+	}
+	switch req.Header.Get("Content-Encoding") {
+	case "deflate":
+		if knownCLen {
+			deflateLengthAccumulator.Add(cLen)
+			deflateCounter.Inc()
+		}
+		var err error
+		reader, err = zlib.NewReader(reader)
+		if err != nil {
+			return nil, err
+		}
+
+	case "gzip":
+		if knownCLen {
+			gzipLengthAccumulator.Add(cLen)
+			gzipCounter.Inc()
+		}
+		var err error
+		reader, err = gzip.NewReader(reader)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		if knownCLen {
+			uncompressedLengthAccumulator.Add(cLen)
+			uncompressedCounter.Inc()
+		}
+	}
+	readerCounter.Inc()
+	return reader, nil
+}
+
+func DecodeJSONData(reader io.Reader) (map[string]interface{}, error) {
 	v := make(map[string]interface{})
 	d := json.NewDecoder(reader)
 	d.UseNumber()

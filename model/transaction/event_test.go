@@ -18,88 +18,165 @@
 package transaction
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
-
-	"github.com/elastic/apm-server/transform"
+	"time"
 
 	"github.com/stretchr/testify/assert"
-
-	"time"
+	"github.com/stretchr/testify/require"
 
 	"github.com/elastic/apm-server/model/metadata"
 	"github.com/elastic/apm-server/model/span"
+	"github.com/elastic/apm-server/transform"
 	"github.com/elastic/beats/libbeat/common"
 )
 
-func TestTransactionEventDecode(t *testing.T) {
-	id, trType, name, result := "123", "type", "foo()", "555"
-	duration := 1.67
-	context := map[string]interface{}{"a": "b"}
-	marks := map[string]interface{}{"k": "b"}
-	dropped := 12
-	spanCount := map[string]interface{}{
-		"dropped": map[string]interface{}{
-			"total": 12.0,
-		},
-	}
-	timestamp := "2017-05-30T18:53:27.154Z"
-	timestampParsed, _ := time.Parse(time.RFC3339, timestamp)
-	sampled := true
-
+func TestTransactionEventDecodeFailure(t *testing.T) {
 	for _, test := range []struct {
 		input       interface{}
 		err, inpErr error
 		e           *Event
 	}{
-		{input: nil, err: nil, e: nil},
+		{input: nil, err: errors.New("Input missing for decoding Event"), e: nil},
 		{input: nil, inpErr: errors.New("a"), err: errors.New("a"), e: nil},
 		{input: "", err: errors.New("Invalid type for transaction event"), e: nil},
 		{
+			// v1 expects a timestamp string and for v2 there's a trace_id missing
 			input: map[string]interface{}{"timestamp": 123},
 			err:   errors.New("Error fetching field"),
+			e:     nil,
+		},
+	} {
+		for _, decodeFct := range []func(interface{}, error) (transform.Transformable, error){V1DecodeEvent, V2DecodeEvent} {
+			transformable, err := decodeFct(test.input, test.inpErr)
+			assert.Equal(t, test.err, err)
+			if test.e != nil {
+				event := transformable.(*Event)
+				assert.Equal(t, test.e, event)
+			} else {
+				assert.Nil(t, transformable)
+			}
+		}
+
+	}
+}
+
+func TestTransactionEventDecodeV1(t *testing.T) {
+	id, trType, name, result := "123", "type", "foo()", "555"
+	timestamp := "2017-05-30T18:53:27.154Z"
+	timestampParsed, _ := time.Parse(time.RFC3339, timestamp)
+	traceId, parentId := "0147258369012345abcdef0123456789", "abcdef0123456789"
+	dropped, duration := 12, 1.67
+	context := map[string]interface{}{"a": "b"}
+	marks := map[string]interface{}{"k": "b"}
+	sampled := true
+	start := 1.2
+
+	for _, test := range []struct {
+		input interface{}
+		e     *Event
+	}{
+		// minimal event
+		{input: map[string]interface{}{
+			"id": id, "type": trType, "duration": duration, "timestamp": timestamp,
+		},
 			e: &Event{
-				Id: "", Type: "", Name: nil, Result: nil,
-				Duration: 0.0, Timestamp: time.Time{},
-				Context: nil, Marks: nil, Sampled: nil,
-				SpanCount: SpanCount{Dropped: Dropped{Total: nil}},
-				Spans:     []*span.Span{},
+				Id: id, Type: trType, Duration: duration, Timestamp: timestampParsed,
 			},
 		},
+		// full event, ignoring v2 attrs
 		{
 			input: map[string]interface{}{
 				"id": id, "type": trType, "name": name, "result": result,
 				"duration": duration, "timestamp": timestamp,
 				"context": context, "marks": marks, "sampled": sampled,
-				"span_count": spanCount,
+				"parent_id": parentId, "trace_id": traceId,
 				"spans": []interface{}{
 					map[string]interface{}{
 						"name": "span", "type": "db", "start": 1.2, "duration": 2.3,
-					},
-				},
-			},
-			err: nil,
+					}},
+				"span_count": map[string]interface{}{"dropped": map[string]interface{}{"total": 12.0}}},
 			e: &Event{
 				Id: id, Type: trType, Name: &name, Result: &result,
 				Duration: duration, Timestamp: timestampParsed,
 				Context: context, Marks: marks, Sampled: &sampled,
-				SpanCount: SpanCount{Dropped: Dropped{Total: &dropped}},
-				Spans: []*span.Span{
-					&span.Span{Name: "span", Type: "db", Start: 1.2, Duration: 2.3,
-						TransactionId: id, Timestamp: timestampParsed},
+				SpanCount: SpanCount{Dropped: &dropped},
+				Spans: []*span.Event{
+					&span.Event{Name: "span", Type: "db", Start: &start, Duration: 2.3, TransactionId: id, Timestamp: timestampParsed},
 				},
 			},
 		},
 	} {
-		event, err := DecodeEvent(test.input, test.inpErr)
-		if test.e != nil {
-			transaction := event.(*Event)
-			assert.Equal(t, test.e, transaction)
-		} else {
-			assert.Nil(t, event)
-		}
+		transformable, err := V1DecodeEvent(test.input, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, test.e, transformable.(*Event))
+	}
+}
+
+func TestTransactionEventDecodeV2(t *testing.T) {
+	id, trType, name, result := "123", "type", "foo()", "555"
+	timestamp := "2017-05-30T18:53:27.154Z"
+	timestampParsed, _ := time.Parse(time.RFC3339, timestamp)
+	timestampEpoch := json.Number(fmt.Sprintf("%d", timestampParsed.UnixNano()/1000))
+	traceId, parentId := "0147258369012345abcdef0123456789", "abcdef0123456789"
+	dropped, started, duration := 12, 6, 1.67
+	context := map[string]interface{}{"a": "b"}
+	marks := map[string]interface{}{"k": "b"}
+	sampled := true
+
+	for _, test := range []struct {
+		input interface{}
+		err   error
+		e     *Event
+	}{
+		// traceId missing
+		{
+			input: map[string]interface{}{
+				"id": id, "type": trType, "duration": duration, "timestamp": timestampEpoch,
+				"span_count": map[string]interface{}{"started": 6.0}},
+			err: errors.New("Error fetching field"),
+		},
+		// minimal event
+		{
+			input: map[string]interface{}{
+				"id": id, "type": trType, "duration": duration, "timestamp": timestampEpoch,
+				"trace_id": traceId, "span_count": map[string]interface{}{"started": 6.0}},
+			e: &Event{
+				Id: id, Type: trType, TraceId: traceId,
+				Duration: duration, Timestamp: timestampParsed,
+				SpanCount: SpanCount{Started: &started},
+				v2Event:   true,
+			},
+		},
+		// full event, ignoring spans
+		{
+			input: map[string]interface{}{
+				"id": id, "type": trType, "name": name, "result": result,
+				"duration": duration, "timestamp": timestampEpoch,
+				"context": context, "marks": marks, "sampled": sampled,
+				"parent_id": parentId, "trace_id": traceId,
+				"spans": []interface{}{
+					map[string]interface{}{
+						"name": "span", "type": "db", "start": 1.2, "duration": 2.3,
+					}},
+				"span_count": map[string]interface{}{"dropped": 12.0, "started": 6.0}},
+			e: &Event{Id: id, Type: trType, Name: &name, Result: &result,
+				ParentId: &parentId, TraceId: traceId,
+				Duration: duration, Timestamp: timestampParsed,
+				Context: context, Marks: marks, Sampled: &sampled,
+				SpanCount: SpanCount{Dropped: &dropped, Started: &started},
+				v2Event:   true,
+			},
+		},
+	} {
+		transformable, err := V2DecodeEvent(test.input, nil)
 		assert.Equal(t, test.err, err)
+		if test.e != nil {
+			event := transformable.(*Event)
+			assert.Equal(t, test.e, event)
+		}
 	}
 }
 
@@ -108,7 +185,7 @@ func TestEventTransform(t *testing.T) {
 	id := "123"
 	result := "tx result"
 	sampled := false
-	dropped := 5
+	dropped, startedSpans := 5, 14
 	name := "mytransaction"
 
 	tests := []struct {
@@ -128,6 +205,52 @@ func TestEventTransform(t *testing.T) {
 		},
 		{
 			Event: Event{
+				Id:       id,
+				Type:     "tx",
+				Duration: 65.98,
+			},
+			Output: common.MapStr{
+				"id":       id,
+				"type":     "tx",
+				"duration": common.MapStr{"us": 65980},
+				"sampled":  true,
+			},
+			Msg: "SpanCount empty",
+		},
+		{
+			Event: Event{
+				Id:        id,
+				Type:      "tx",
+				Duration:  65.98,
+				SpanCount: SpanCount{Started: &startedSpans},
+			},
+			Output: common.MapStr{
+				"id":         id,
+				"type":       "tx",
+				"duration":   common.MapStr{"us": 65980},
+				"span_count": common.MapStr{"started": 14},
+				"sampled":    true,
+			},
+			Msg: "SpanCount only contains `started`",
+		},
+		{
+			Event: Event{
+				Id:        id,
+				Type:      "tx",
+				Duration:  65.98,
+				SpanCount: SpanCount{Dropped: &dropped},
+			},
+			Output: common.MapStr{
+				"id":         id,
+				"type":       "tx",
+				"duration":   common.MapStr{"us": 65980},
+				"span_count": common.MapStr{"dropped": common.MapStr{"total": 5}},
+				"sampled":    true,
+			},
+			Msg: "SpanCount only contains `dropped`",
+		},
+		{
+			Event: Event{
 				Id:        id,
 				Name:      &name,
 				Type:      "tx",
@@ -135,9 +258,9 @@ func TestEventTransform(t *testing.T) {
 				Timestamp: time.Now(),
 				Duration:  65.98,
 				Context:   common.MapStr{"foo": "bar"},
-				Spans:     []*span.Span{},
+				Spans:     []*span.Event{},
 				Sampled:   &sampled,
-				SpanCount: SpanCount{Dropped: Dropped{Total: &dropped}},
+				SpanCount: SpanCount{Started: &startedSpans, Dropped: &dropped},
 			},
 			Output: common.MapStr{
 				"id":         id,
@@ -145,7 +268,7 @@ func TestEventTransform(t *testing.T) {
 				"type":       "tx",
 				"result":     "tx result",
 				"duration":   common.MapStr{"us": 65980},
-				"span_count": common.MapStr{"dropped": common.MapStr{"total": 5}},
+				"span_count": common.MapStr{"started": 14, "dropped": common.MapStr{"total": 5}},
 				"sampled":    false,
 			},
 			Msg: "Full Event",
@@ -242,7 +365,7 @@ func TestEventsTransformWithMetadata(t *testing.T) {
 		},
 	}
 
-	spans := []*span.Span{{
+	spans := []*span.Event{{
 		Timestamp: timestamp,
 	}}
 
@@ -261,10 +384,8 @@ func TestEventsTransformWithMetadata(t *testing.T) {
 		"span": common.MapStr{
 			"duration": common.MapStr{"us": 0},
 			"name":     "",
-			"start":    common.MapStr{"us": 0},
 			"type":     "",
 		},
-		"transaction": common.MapStr{"id": ""},
 	}
 
 	tests := []struct {
@@ -319,7 +440,18 @@ func TestEventsTransformWithMetadata(t *testing.T) {
 
 		for j, outputEvent := range outputEvents {
 			assert.Equal(t, test.Output[j], outputEvent.Fields, fmt.Sprintf("Failed at idx %v (j: %v); %s", idx, j, test.Msg))
-			assert.Equal(t, timestamp, outputEvent.Timestamp)
+			assert.Equal(t, timestamp, outputEvent.Timestamp, fmt.Sprintf("Failed at idx %v (j: %v); %s", idx, j, test.Msg))
 		}
 	}
+}
+
+func TestEventTransformUseReqTime(t *testing.T) {
+	reqTimestamp := "2017-05-30T18:53:27.154Z"
+	reqTimestampParsed, err := time.Parse(time.RFC3339, reqTimestamp)
+	require.NoError(t, err)
+
+	e := Event{}
+	beatEvent := e.Transform(&transform.Context{RequestTime: reqTimestampParsed})
+	require.Len(t, beatEvent, 1)
+	assert.Equal(t, reqTimestampParsed, beatEvent[0].Timestamp)
 }

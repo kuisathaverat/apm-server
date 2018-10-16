@@ -19,11 +19,11 @@ package transform
 
 import (
 	"regexp"
-
-	"github.com/elastic/beats/libbeat/beat"
+	"time"
 
 	"github.com/elastic/apm-server/model/metadata"
 	"github.com/elastic/apm-server/sourcemap"
+	"github.com/elastic/beats/libbeat/beat"
 )
 
 type Transformable interface {
@@ -31,8 +31,9 @@ type Transformable interface {
 }
 
 type Context struct {
-	Config   Config
-	Metadata metadata.Metadata
+	RequestTime time.Time
+	Config      Config
+	Metadata    metadata.Metadata
 }
 
 type Config struct {
