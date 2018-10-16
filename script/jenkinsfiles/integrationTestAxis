@@ -12,12 +12,14 @@ pipeline {
     JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
     JOB_GIT_INTEGRATION_URL="git@github.com:kuisathaverat/apm-integration-testing.git"
     INTEGRATION_TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
+    JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
   }
    
   options {
     timeout(time: 1, unit: 'HOURS') 
     buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2', daysToKeepStr: '30'))
     timestamps()
+    ansiColor('xterm')
   }
   parameters {
     string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")

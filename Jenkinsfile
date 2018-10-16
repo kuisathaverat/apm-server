@@ -14,6 +14,7 @@ pipeline {
       JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
       INTEGRATION_TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
       HEY_APM_TEST_BASE_DIR = "src/github.com/elastic/hey-apm"
+      JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
     }
     triggers {
       cron('0 0 * * 1-5')
@@ -24,6 +25,7 @@ pipeline {
       buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2', daysToKeepStr: '30'))
       timestamps()
       preserveStashes()
+      ansiColor('xterm')
     }
     parameters {
       string(name: 'branch_specifier', defaultValue: "refs/heads/master", description: "the Git branch specifier to build (<branchName>, <tagName>, <commitId>, etc.)")
