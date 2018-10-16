@@ -6,7 +6,7 @@ retriever: modernSCM(
   remote: 'git@github.com:elastic/apm-pipeline-library.git'])
 
 pipeline {
-  agent { label 'master || linux' }
+  agent { label 'linux' }
   environment {
     HOME = "${env.HUDSON_HOME}"
     BASE_DIR="src/github.com/elastic/apm-server"
@@ -48,7 +48,7 @@ pipeline {
   }
   stages{
     stage('Checkout Integration Tests'){
-      agent { label 'master || linux' }
+      agent { label 'linux' }
       steps {
         withEnvWrapper() {
           dir("${INTEGRATION_TEST_BASE_DIR}"){
