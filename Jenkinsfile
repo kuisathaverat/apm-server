@@ -84,10 +84,9 @@ pipeline {
                       https://jenkins.io/doc/pipeline/examples/#push-git-repo
                       */
                       /*
-                      sshagent (credentials: ["${JOB_GIT_CREDENTIALS}"]) {
-                        sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
-                        sh('git push git@github.com:kuisathaverat/apm-server.git --tags')
-                      }*/
+                      sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
+                      sh('git push git@github.com:kuisathaverat/apm-server.git --tags')
+                      */
                       withCredentials([usernamePassword(credentialsId: 'dca1b5a0-edbc-4d0e-bc0c-c38857c83a80', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
                         sh('git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/kuisathaverat/apm-server.git --tags')
@@ -120,10 +119,10 @@ pipeline {
                 steps {
                   withEnvWrapper() {
                       unstash 'source'
-                      dir("${BASE_DIR}"){  
+                      dir("${BASE_DIR}"){
+                        /* TODO enable intake */
                         sh """#!${JOB_SHELL}
-                        go get -u golang.org/x/tools/cmd/goimports
-                        ./script/jenkins/intake.sh
+                        echo ./script/jenkins/intake.sh
                         """
                       }
                     }
