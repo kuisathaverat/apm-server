@@ -84,9 +84,14 @@ pipeline {
                       /** TODO enable create tag
                       https://jenkins.io/doc/pipeline/examples/#push-git-repo
                       */
+                      /*
                       sshagent (credentials: ["${JOB_GIT_CREDENTIALS}"]) {
                         sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
                         sh('git push git@github.com:kuisathaverat/apm-server.git --tags')
+                      }*/
+                      withCredentials([usernamePassword(credentialsId: 'dca1b5a0-edbc-4d0e-bc0c-c38857c83a80', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                        sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
+                        sh('git push https://${GIT_USERNAME}:${GIT_PASSWORD}@https://github.com/kuisathaverat/apm-server.git --tags')
                       }
                     }
                   }
