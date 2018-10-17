@@ -10,7 +10,6 @@ pipeline {
     environment {
       HOME = "${env.HUDSON_HOME}"
       BASE_DIR="src/github.com/elastic/apm-server"
-      JOB_GIT_URL="git@github.com:kuisathaverat/apm-server.git"
       JOB_GIT_INTEGRATION_URL="git@github.com:elastic/apm-integration-testing.git"
       INTEGRATION_TEST_BASE_DIR = "src/github.com/elastic/apm-integration-testing"
       HEY_APM_TEST_BASE_DIR = "src/github.com/elastic/hey-apm"
@@ -28,7 +27,7 @@ pipeline {
       ansiColor('xterm')
     }
     parameters {
-      string(name: 'branch_specifier', defaultValue: "refs/heads/master", description: "the Git branch specifier to build (<branchName>, <tagName>, <commitId>, etc.)")
+      string(name: 'branch_specifier', defaultValue: "", description: "the Git branch specifier to build (<branchName>, <tagName>, <commitId>, etc.)")
       string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
       string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the integrations test")
       string(name: 'JOB_HEY_APM_TEST_BRANCH_SPEC', defaultValue: "refs/heads/master", description: "the Git branch specifier to make the Hey APM test")      
@@ -68,34 +67,29 @@ pipeline {
                   dir("${BASE_DIR}"){
                     script{
                       if(!branch_specifier){
-                        echo "Checkout SCM"
-                        sh 'export'
+                        echo "Checkout SCM ${GIT_BRANCH} - ${GIT_COMMIT}"
                         checkout scm
                       } else {
                         echo "Checkout ${branch_specifier}"
-                        sh 'export'
                         checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
                           doGenerateSubmoduleConfigurations: false, 
                           extensions: [], 
                           submoduleCfg: [], 
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
-                          url: "${JOB_GIT_URL}"]]])
+                          url: "${GIT_URL}"]]])
                       }
                       echo pwd()
                       env.JOB_GIT_COMMIT = getGitCommitSha()
+                      env.JOB_GIT_URL = "${GIT_URL}"
                       
                       /** TODO enable create tag
                       https://jenkins.io/doc/pipeline/examples/#push-git-repo
-                      
-                      sh("git tag -a 'commit-${JOB_GIT_COMMIT}' -m 'Jenkins'")
+                      *//
+                      sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
                       sh('git push ${JOB_GIT_URL} --tags')
-                      
-                      env.APM_SERVER_BRANCH = "commit-${JOB_GIT_COMMIT}"
-                      */
                     }
                   }
                   stash allowEmpty: true, name: 'source'
-                  sh "export"
               }
           }
       }
@@ -353,28 +347,7 @@ pipeline {
               }*/
             }
         }
-        
-        stage('Checkout Integration Tests'){
-          agent { label 'master || linux' }
-          when { 
-            beforeAgent true
-            environment name: 'integration_test_ci', value: 'true' 
-          }
-          steps {
-            withEnvWrapper() {
-              dir("${INTEGRATION_TEST_BASE_DIR}"){
-                checkout([$class: 'GitSCM', branches: [[name: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"]], 
-                  doGenerateSubmoduleConfigurations: false, 
-                  extensions: [], 
-                  submoduleCfg: [], 
-                  userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
-                  url: "${JOB_GIT_INTEGRATION_URL}"]]])
-              }
-              stash allowEmpty: true, name: 'source_intest'
-            }
-          }  
-        }
-        
+
         stage('Integration Tests') {
             failFast true
             when { 
@@ -389,23 +362,23 @@ pipeline {
               stage('Integration test') { 
                   agent { label 'linux' }
                   steps {
-                    withEnvWrapper() {
-                      unstash "source_intest"
-                      dir("${INTEGRATION_TEST_BASE_DIR}"){
-                        /** TODO enable build APM server from commit. */
-                          sh """#!/usr/bin/env bash
-                          export COMPOSE_ARGS="${ELASTIC_STACK_VERSION} --no-apm-server-dashboards --with-agent-rumjs --with-agent-go-net-http --with-agent-nodejs-express --with-agent-python-django --with-agent-python-flask --with-agent-ruby-rails --with-agent-java-spring --force-build --build-parallel"
-                          ./scripts/ci/all.sh
-                          """
-                      }
-                    }  
-                  } 
-                  post {
-                    always {
-                      junit(allowEmptyResults: true, 
-                        keepLongStdio: true, 
-                        testResults: "${INTEGRATION_TEST_BASE_DIR}/tests/results/*-junit.xml")
-                    }
+                    build(
+                      job: 'apm-integration-testing-pipeline', 
+                      parameters: [
+                        string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', value: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"), 
+                        string(name: 'ELASTIC_STACK_VERSION', value: "${ELASTIC_STACK_VERSION}"), 
+                        string(name: 'APM_SERVER_BRANCH', value: "${BUILD_TAG}"),
+                        string(name: 'BUILD_OPTS', value: opts),
+                        string(name: 'BUILD_DESCRIPTION', value: tag),
+                        booleanParam(name: "go_Test", value: true),
+                        booleanParam(name: "java_Test", value: true),
+                        booleanParam(name: "ruby_Test", value: true),
+                        booleanParam(name: "python_Test", value: true),
+                        booleanParam(name: "nodejs_Test", value: true),
+                        booleanParam(name: "kibana_Test", value: true),
+                        booleanParam(name: "server_Test", value: true)],
+                      wait: true,
+                      propagate: true)
                   }
               }
 
@@ -540,8 +513,8 @@ pipeline {
       success { 
           echo 'Success Post Actions'
           updateGithubCommitStatus(
-            repoUrl: "${GIT_URL}",
-            commitSha: "${GIT_COMMIT}",
+            repoUrl: "${JOB_GIT_URL}",
+            commitSha: "${JOB_GIT_COMMIT}",
             message: 'Build result SUCCESS.'
           )
           /*
