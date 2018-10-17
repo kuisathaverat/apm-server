@@ -68,8 +68,12 @@ pipeline {
                   dir("${BASE_DIR}"){
                     script{
                       if(!branch_specifier){
+                        echo "Checkout SCM"
+                        sh 'export'
                         checkout scm
                       } else {
+                        cho "Checkout ${branch_specifier}"
+                        sh 'export'
                         checkout([$class: 'GitSCM', branches: [[name: "${branch_specifier}"]], 
                           doGenerateSubmoduleConfigurations: false, 
                           extensions: [], 
