@@ -36,14 +36,11 @@ pipeline {
     string(name: 'BUILD_OPTS', defaultValue: "", description: "Addicional build options to passing compose.py")
 
     booleanParam(name: 'DISABLE_BUILD_PARALLEL', defaultValue: true, description: "Disable the build parallel option on compose.py, disable it is better for error detection.")
-    booleanParam(name: 'all_Test', defaultValue: false, description: 'Enable Test')
     booleanParam(name: 'go_Test', defaultValue: false, description: 'Enable Test')
     booleanParam(name: 'java_Test', defaultValue: false, description: 'Enable Test')
-    booleanParam(name: 'kibana_Test', defaultValue: false, description: 'Enable Test')
     booleanParam(name: 'nodejs_Test', defaultValue: false, description: 'Enable Test')
     booleanParam(name: 'python_Test', defaultValue: false, description: 'Enable Test')
     booleanParam(name: 'ruby_Test', defaultValue: false, description: 'Enable Test')
-    booleanParam(name: 'server_Test', defaultValue: false, description: 'Enable Test')
   }
   stages{
     stage('Checkout Integration Tests'){
