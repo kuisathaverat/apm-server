@@ -63,7 +63,6 @@ pipeline {
           
           steps {
               withEnvWrapper() {
-                  echo "${PATH}:${HUDSON_HOME}/go/bin/:${WORKSPACE}/bin"
                   dir("${BASE_DIR}"){
                     script{
                       if(!branch_specifier){
@@ -123,6 +122,7 @@ pipeline {
                       unstash 'source'
                       dir("${BASE_DIR}"){  
                         sh """#!${JOB_SHELL}
+                        go get -u golang.org/x/tools/cmd/goimports
                         ./script/jenkins/intake.sh
                         """
                       }
