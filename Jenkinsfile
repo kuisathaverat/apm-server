@@ -83,14 +83,13 @@ pipeline {
                       /** TODO enable create tag
                       https://jenkins.io/doc/pipeline/examples/#push-git-repo
                       */
-                      /*
                       sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
                       sh('git push git@github.com:kuisathaverat/apm-server.git --tags')
-                      */
+                      /*
                       withCredentials([usernamePassword(credentialsId: 'dca1b5a0-edbc-4d0e-bc0c-c38857c83a80', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
                         sh('git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/kuisathaverat/apm-server.git --tags')
-                      }
+                      }*/
                     }
                   }
                   stash allowEmpty: true, name: 'source'
@@ -368,7 +367,7 @@ pipeline {
                   agent { label 'linux' }
                   steps {
                     build(
-                      job: 'apm-integration-testing-pipeline', 
+                      job: 'apm-server-ci/apm-integration-testing-pipeline', 
                       parameters: [
                         string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', value: "${JOB_INTEGRATION_TEST_BRANCH_SPEC}"), 
                         string(name: 'ELASTIC_STACK_VERSION', value: "${ELASTIC_STACK_VERSION}"), 
@@ -401,7 +400,7 @@ pipeline {
                           submoduleCfg: [], 
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "https://github.com/elastic/hey-apm.git"]]])
-                        }
+                      }
                       dir("${BASE_DIR}"){
                         sh """#!${JOB_SHELL}
                         ./script/jenkins/hey-apm-test.sh
