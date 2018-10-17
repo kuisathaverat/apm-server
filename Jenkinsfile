@@ -54,7 +54,7 @@ pipeline {
       /**
        Checkout the code and stash it, to use it on other stages.
       */
-      stage('Checkout') { 
+      stage('Checkout') {
           agent { label 'master || linux' }
           environment {
             PATH = "${env.PATH}:${env.HUDSON_HOME}/go/bin/:${env.WORKSPACE}/bin"
@@ -78,13 +78,12 @@ pipeline {
                           userRemoteConfigs: [[credentialsId: "${JOB_GIT_CREDENTIALS}", 
                           url: "${GIT_URL}"]]])
                       }
-                      echo pwd()
                       env.JOB_GIT_COMMIT = getGitCommitSha()
                       env.JOB_GIT_URL = "${GIT_URL}"
                       
                       /** TODO enable create tag
                       https://jenkins.io/doc/pipeline/examples/#push-git-repo
-                      *//
+                      */
                       sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
                       sh('git push ${JOB_GIT_URL} --tags')
                     }
