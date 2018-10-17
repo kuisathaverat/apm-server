@@ -91,7 +91,7 @@ pipeline {
                       }*/
                       withCredentials([usernamePassword(credentialsId: 'dca1b5a0-edbc-4d0e-bc0c-c38857c83a80', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
-                        sh('git push https://${GIT_USERNAME}:${GIT_PASSWORD}@https://github.com/kuisathaverat/apm-server.git --tags')
+                        sh('git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/kuisathaverat/apm-server.git --tags')
                       }
                     }
                   }
