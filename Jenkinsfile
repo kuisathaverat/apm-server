@@ -84,8 +84,10 @@ pipeline {
                       /** TODO enable create tag
                       https://jenkins.io/doc/pipeline/examples/#push-git-repo
                       */
-                      sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
-                      sh('git push ${JOB_GIT_URL} --tags')
+                      sshagent (credentials: ["${JOB_GIT_CREDENTIALS}"]) {
+                        sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
+                        sh('git push git@github.com:kuisathaverat/apm-server.git --tags')
+                      }
                     }
                   }
                   stash allowEmpty: true, name: 'source'
