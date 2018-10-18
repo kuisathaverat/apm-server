@@ -82,7 +82,7 @@ pipeline {
                       github_enterprise_constructor()
                       
                       on_change{
-                        echo "build cause a change"
+                        echo "build cause a change (commit or PR)"
                       }
                       
                       on_commit {
@@ -569,6 +569,7 @@ pipeline {
           echo 'Post Actions'
           script {
             unstash 'source'
+            sh("git fetch --all")
             sh("git tag -d '${BUILD_TAG}'")
             sh("git push git@github.com:${ORG_NAME}/${REPO_NAME}.git --tags")
           }
