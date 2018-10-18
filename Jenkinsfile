@@ -567,11 +567,14 @@ pipeline {
       }
       always { 
           echo 'Post Actions'
-          script {
+          dir('cleanTags'){
             unstash 'source'
-            sh("git fetch --tags")
-            sh("git tag -d '${BUILD_TAG}'")
-            sh("git push git@github.com:${ORG_NAME}/${REPO_NAME}.git --tags")
+            sh("""
+            git fetch --tags
+            git tag -d '${BUILD_TAG}'
+            git push git@github.com:${ORG_NAME}/${REPO_NAME}.git --tags
+            """)
+            deleteDir()
           }
       }
     }
