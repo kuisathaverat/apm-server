@@ -569,7 +569,7 @@ pipeline {
           echo 'Post Actions'
           script {
             unstash 'source'
-            sh("git fetch --all")
+            sh("git fetch --tags")
             sh("git tag -d '${BUILD_TAG}'")
             sh("git push git@github.com:${ORG_NAME}/${REPO_NAME}.git --tags")
           }
