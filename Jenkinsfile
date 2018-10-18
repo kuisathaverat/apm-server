@@ -2,9 +2,8 @@ library identifier: 'apm@master',
 retriever: modernSCM(
   [$class: 'GitSCMSource', 
   credentialsId: 'f6c7695a-671e-4f4f-a331-acdce44ff9ba', 
-  id: '37cf2c00-2cc7-482e-8c62-7bbffef475e2', 
   remote: 'git@github.com:elastic/apm-pipeline-library.git'])
-   
+
 pipeline {
     agent any
     environment {
@@ -80,11 +79,29 @@ pipeline {
                       env.JOB_GIT_COMMIT = getGitCommitSha()
                       env.JOB_GIT_URL = "${GIT_URL}"
                       
+                      github_enterprise_constructor()
+                      
+                      on_change{
+                        echo "build cause a change"
+                      }
+                      
+                      on_commit {
+                        echo "build cause a commit"
+                      }
+                      
+                      on_merge {
+                        echo "build cause a merge"
+                      }
+                      
+                      on_pull_request {
+                        echo "build cause PR"
+                      }
+                      
                       /** TODO enable create tag
                       https://jenkins.io/doc/pipeline/examples/#push-git-repo
                       */
                       sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
-                      sh('git push git@github.com:kuisathaverat/apm-server.git --tags')
+                      sh("git push git@github.com:${ORG_NAME}/${REPO_NAME}.git --tags")
                       /*
                       withCredentials([usernamePassword(credentialsId: 'dca1b5a0-edbc-4d0e-bc0c-c38857c83a80', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh("git tag -a '${BUILD_TAG}' -m 'Jenkins TAG ${RUN_DISPLAY_URL}'")
@@ -550,6 +567,11 @@ pipeline {
       }
       always { 
           echo 'Post Actions'
+          script {
+            unstash 'source'
+            sh("git tag -d '${BUILD_TAG}'")
+            sh("git push git@github.com:${ORG_NAME}/${REPO_NAME}.git --tags")
+          }
       }
     }
 }
