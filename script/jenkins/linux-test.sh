@@ -15,21 +15,22 @@ make
 make testsuite
 make coverage-report
 
-export GOPACKAGES=$(go list github.com/elastic/apm-server/...| grep -v /vendor/ | grep -v /scripts/cmd/)
+#export GOPACKAGES=$(go list github.com/elastic/apm-server/...| grep -v /vendor/ | grep -v /scripts/cmd/)
 
-go get github.com/jstemmer/go-junit-report
+go get -v -u github.com/jstemmer/go-junit-report
 
-go get github.com/axw/gocov/gocov
-go get gopkg.in/matm/v1/gocov-html
+go get -v -u github.com/axw/gocov/gocov
+go get -v -u gopkg.in/matm/v1/gocov-html
 
-go get github.com/axw/gocov/...
-go get github.com/AlekSi/gocov-xml
+go get -v -u github.com/axw/gocov/...
+go get -v -u github.com/AlekSi/gocov-xml
 
 export COV_DIR="build/coverage"
 export OUT_FILE="build/test-report.out"
 mkdir -p build
-go test -race ${GOPACKAGES} -v 2>&1 | tee ${OUT_FILE}
-cat ${OUT_FILE} | go-junit-report > build/junit-report.xml
+#go test -race ${GOPACKAGES} -v 2>&1 | tee ${OUT_FILE}
+go test -race ./... -v 2>&1 | tee ${OUT_FILE}
+cat ${OUT_FILE} | go-junit-report > build/junit-apm-server-report.xml
 for i in "full.cov" "integration.cov" "system.cov" "unit.cov"
 do
   name=$(basename ${i} .cov)

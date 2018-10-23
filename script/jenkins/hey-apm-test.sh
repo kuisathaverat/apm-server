@@ -23,11 +23,4 @@ go get -v -u github.com/magefile/mage
 (cd $GOPATH/src/github.com/magefile/mage && go run bootstrap.go)
 echo "Running apm-server stress tests..."
 set +x
-VAULT_TOKEN=$( curl -s -X POST -H "Content-Type: application/json" -L -d "{\"role_id\":\"$VAULT_ROLE_ID_HEY_APM\",\"secret_id\":\"$VAULT_SECRET_ID_HEY_APM\"}" $VAULT_ADDR/v1/auth/approle/login | jq -r '.auth.client_token' )
-CLOUD_DATA=$( curl -s -L -H "X-Vault-Token:$VAULT_TOKEN" $VAULT_ADDR/v1/secret/apm-team/ci/apm-server-benchmark-cloud )
-unset VAULT_TOKEN VAULT_SECRET_ID_HEY_APM VAULT_ROLE_ID_HEY_APM
-CLOUD_USERNAME=$( echo $CLOUD_DATA | jq '.data.user' | tr -d '"' )
-CLOUD_PASSWORD=$( echo $CLOUD_DATA | jq '.data.password' | tr -d '"' )
-CLOUD_ADDR=$( echo $CLOUD_DATA | jq '.data.url' | tr -d '"' )
 ELASTICSEARCH_URL=$CLOUD_ADDR ELASTICSEARCH_USR=$CLOUD_USERNAME ELASTICSEARCH_PWD=$CLOUD_PASSWORD go test -timeout 2h  -v github.com/elastic/hey-apm/server/client
-set -x

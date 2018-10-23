@@ -22,11 +22,10 @@ pipeline {
     ansiColor('xterm')
   }
   parameters {
-    string(name: 'JOB_SHELL', defaultValue: "/usr/local/bin/runbld", description: "Shell script base commandline to use to run scripts")
-    string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/pipeline", description: "the Git branch specifier to make the integrations test")
-    string(name: 'ELASTIC_STACK_VERSION', defaultValue: "6.4", description: "the Git branch specifier of Elastic Stack to use")
-    string(name: 'APM_SERVER_BRANCH', defaultValue: "master", description: "the Git branch specifier of APM Server to use")
-
+    string(name: 'JOB_INTEGRATION_TEST_BRANCH_SPEC', defaultValue: "refs/heads/pipeline", description: "The integrations test Git branch to use")
+    string(name: 'ELASTIC_STACK_VERSION', defaultValue: "6.4", description: "Elastic Stack Git branch/tag to use")
+    string(name: 'APM_SERVER_BRANCH', defaultValue: "master", description: "APM Server Git branch/tag to use")
+    
     string(name: 'APM_AGENT_NODEJS_PKG', defaultValue: "release;latest", description: "APM Agent NodeJS package to use, it can be a release version (release;VERSION) or build from a github branch (github;BRANCH)")
     string(name: 'APM_AGENT_PYTHON_PKG', defaultValue: "release;latest", description: "APM Agent Python package to use, it can be a release version (release;VERSION) or build from a github branch (github;RANCH)")
     string(name: 'APM_AGENT_RUBY_PKG', defaultValue: "release;latest", description: "APM Agent Ruby package to use, it can be a release version (release;VERSION) or build from a github branch (github;RANCH)")
@@ -59,61 +58,50 @@ pipeline {
         }
       }  
     }
-
-    //stage("Integration Tests"){
-      //failFast false
-      //parallel {
-        stage("Go") { 
-          //agent { label 'linux' }
-          when { 
-            beforeAgent true
-            environment name: 'go_Test', value: 'true' 
-          }
-          steps {
-            runIntegrationTestAxis("go")
-          } 
-        }
-        stage("Java") { 
-          //agent { label 'linux' }
-          when { 
-            beforeAgent true
-            environment name: 'java_Test', value: 'true' 
-          }
-          steps {
-            runIntegrationTestAxis("java")
-          }  
-        }
-        stage("Node.js") { 
-          //agent { label 'linux' }
-          when { 
-            beforeAgent true
-            environment name: 'nodejs_Test', value: 'true' 
-          }
-          steps {
-            runIntegrationTestAxis("nodejs")
-          }
-        }
-        stage("Python") { 
-          //agent { label 'linux' }
-          when { 
-            beforeAgent true
-            environment name: 'python_Test', value: 'true' 
-          }
-          steps {
-            runIntegrationTestAxis("python")
-          }
-        }
-        stage("Ruby") { 
-          //agent { label 'linux' }
-          when { 
-            beforeAgent true
-            environment name: 'ruby_Test', value: 'true' 
-          }
-          steps {
-            runIntegrationTestAxis("ruby")
-          }
-        }
-      //}
-    //}
+    stage("Go") { 
+      when { 
+        beforeAgent true
+        environment name: 'go_Test', value: 'true' 
+      }
+      steps {
+        runIntegrationTestAxis("go")
+      } 
+    }
+    stage("Java") { 
+      when { 
+        beforeAgent true
+        environment name: 'java_Test', value: 'true' 
+      }
+      steps {
+        runIntegrationTestAxis("java")
+      }  
+    }
+    stage("Node.js") { 
+      when { 
+        beforeAgent true
+        environment name: 'nodejs_Test', value: 'true' 
+      }
+      steps {
+        runIntegrationTestAxis("nodejs")
+      }
+    }
+    stage("Python") { 
+      when { 
+        beforeAgent true
+        environment name: 'python_Test', value: 'true' 
+      }
+      steps {
+        runIntegrationTestAxis("python")
+      }
+    }
+    stage("Ruby") { 
+      when { 
+        beforeAgent true
+        environment name: 'ruby_Test', value: 'true' 
+      }
+      steps {
+        runIntegrationTestAxis("ruby")
+      }
+    }
   }
 }
