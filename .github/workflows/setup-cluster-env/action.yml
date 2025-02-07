@@ -1,0 +1,15 @@
+---
+
+name: setup-cluster-env
+description: Setup cluster env
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+        cache: true
+        cache-dependency-path: |
+          go.sum
+          tools/go.sum

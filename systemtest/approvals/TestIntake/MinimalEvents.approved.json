@@ -1,0 +1,460 @@
+[
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "data_stream.dataset": [
+            "apm.error"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "logs"
+        ],
+        "error.grouping_key": [
+            "e7427150b064c482"
+        ],
+        "error.grouping_name": [
+            "error log message"
+        ],
+        "error.id": [
+            "abcdef0123456789"
+        ],
+        "error.log.level": [
+            "error"
+        ],
+        "error.log.message": [
+            "error log message"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "message": [
+            "error log message"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "error"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "timestamp.us": [
+            "dynamic"
+        ]
+    },
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "data_stream.dataset": [
+            "apm.error"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "logs"
+        ],
+        "error.exception.message": [
+            "error exception message"
+        ],
+        "error.grouping_key": [
+            "5914882bfc6424ff"
+        ],
+        "error.grouping_name": [
+            "error exception message"
+        ],
+        "error.id": [
+            "abcdef0123456790"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "message": [
+            "error exception message"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "error"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "timestamp.us": [
+            "dynamic"
+        ]
+    },
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "data_stream.dataset": [
+            "apm.error"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "logs"
+        ],
+        "error.exception.type": [
+            "error exception type"
+        ],
+        "error.grouping_key": [
+            "0726afd6fffc5433"
+        ],
+        "error.id": [
+            "abcdef0123456791"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "error"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "timestamp.us": [
+            "dynamic"
+        ]
+    },
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "a": [
+            3.2
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "data_stream.dataset": [
+            "apm.app.1234_service_12a3"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "metricset.name": [
+            "app"
+        ],
+        "metricset.name.text": [
+            "app"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ]
+    },
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "ab23456a89012345"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "span.duration.us": [
+            3564
+        ],
+        "span.id": [
+            "0123456a89012345"
+        ],
+        "span.name": [
+            "GET /api/types"
+        ],
+        "span.name.text": [
+            "GET /api/types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.type": [
+            "request"
+        ],
+        "timestamp.us": [
+            "dynamic"
+        ],
+        "trace.id": [
+            "0123456789abcdef0123456789abcdef"
+        ]
+    },
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "ab23456a89012345"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "span.duration.us": [
+            3564
+        ],
+        "span.id": [
+            "0123456a89012345"
+        ],
+        "span.name": [
+            "GET /api/types"
+        ],
+        "span.name.text": [
+            "GET /api/types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.type": [
+            "request"
+        ],
+        "timestamp.us": [
+            "dynamic"
+        ],
+        "trace.id": [
+            "0123456789abcdef0123456789abcdef"
+        ]
+    },
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "transaction"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "span.id": [
+            "abcdef1478523690"
+        ],
+        "timestamp.us": [
+            "dynamic"
+        ],
+        "trace.id": [
+            "01234567890123456789abcdefabcdef"
+        ],
+        "transaction.duration.us": [
+            32592
+        ],
+        "transaction.id": [
+            "abcdef1478523690"
+        ],
+        "transaction.representative_count": [
+            1
+        ],
+        "transaction.sampled": [
+            true
+        ],
+        "transaction.span_count.started": [
+            0
+        ],
+        "transaction.type": [
+            "request"
+        ]
+    }
+]

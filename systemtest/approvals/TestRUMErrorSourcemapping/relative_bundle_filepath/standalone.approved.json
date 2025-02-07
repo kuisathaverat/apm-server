@@ -1,0 +1,133 @@
+[
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "rum-js"
+        ],
+        "agent.name.text": [
+            "rum-js"
+        ],
+        "agent.version": [
+            "0.0.0"
+        ],
+        "client.ip": [
+            "dynamic"
+        ],
+        "data_stream.dataset": [
+            "apm.error"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "logs"
+        ],
+        "error.culprit": [
+            "webpack:///webpack/bootstrap 6002740481c9666b0d38 in \u003canonymous\u003e"
+        ],
+        "error.exception.message": [
+            "Uncaught Error: timeout test error"
+        ],
+        "error.exception.type": [
+            "Error"
+        ],
+        "error.grouping_key": [
+            "9b83ced5381eaafe"
+        ],
+        "error.grouping_name": [
+            "Uncaught Error: log timeout test error"
+        ],
+        "error.id": [
+            "aba2688e033848ce9c4e4005f1caa534"
+        ],
+        "error.log.level": [
+            "error"
+        ],
+        "error.log.message": [
+            "Uncaught Error: log timeout test error"
+        ],
+        "http.request.referrer": [
+            "http://localhost:8000/test/e2e/"
+        ],
+        "message": [
+            "Uncaught Error: log timeout test error"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "error"
+        ],
+        "service.name": [
+            "apm-agent-js"
+        ],
+        "service.name.text": [
+            "apm-agent-js"
+        ],
+        "service.version": [
+            "1.0.1"
+        ],
+        "source.ip": [
+            "dynamic"
+        ],
+        "source.port": [
+            "dynamic"
+        ],
+        "timestamp.us": [
+            "dynamic"
+        ],
+        "url.domain": [
+            "localhost"
+        ],
+        "url.full": [
+            "http://localhost:8000/test/e2e/general-usecase/"
+        ],
+        "url.full.text": [
+            "http://localhost:8000/test/e2e/general-usecase/"
+        ],
+        "url.original": [
+            "http://localhost:8000/test/e2e/general-usecase/"
+        ],
+        "url.original.text": [
+            "http://localhost:8000/test/e2e/general-usecase/"
+        ],
+        "url.path": [
+            "/test/e2e/general-usecase/"
+        ],
+        "url.port": [
+            8000
+        ],
+        "url.scheme": [
+            "http"
+        ],
+        "user_agent.device.name": [
+            "Other"
+        ],
+        "user_agent.device.name.text": [
+            "Other"
+        ],
+        "user_agent.name": [
+            "Go-http-client"
+        ],
+        "user_agent.name.text": [
+            "Go-http-client"
+        ],
+        "user_agent.original": [
+            "Go-http-client/1.1"
+        ],
+        "user_agent.original.text": [
+            "Go-http-client/1.1"
+        ],
+        "user_agent.version": [
+            "1.1"
+        ]
+    }
+]

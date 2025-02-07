@@ -1,0 +1,136 @@
+[
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "go"
+        ],
+        "agent.name.text": [
+            "go"
+        ],
+        "agent.version": [
+            "0.0.0"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            1
+        ],
+        "host.architecture": [
+            "i386"
+        ],
+        "host.hostname": [
+            "beowulf"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "beowulf"
+        ],
+        "host.name.text": [
+            "beowulf"
+        ],
+        "host.os.platform": [
+            "minix"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "process.pid": [
+            1
+        ],
+        "process.title": [
+            "systemtest.test"
+        ],
+        "process.title.text": [
+            "systemtest.test"
+        ],
+        "processor.event": [
+            "transaction"
+        ],
+        "service.language.name": [
+            "go"
+        ],
+        "service.language.name.text": [
+            "go"
+        ],
+        "service.language.version": [
+            "2.0"
+        ],
+        "service.name": [
+            "systemtest"
+        ],
+        "service.name.text": [
+            "systemtest"
+        ],
+        "service.node.name": [
+            "beowulf"
+        ],
+        "service.node.name.text": [
+            "beowulf"
+        ],
+        "service.runtime.name": [
+            "gc"
+        ],
+        "service.runtime.name.text": [
+            "gc"
+        ],
+        "service.runtime.version": [
+            "2.0"
+        ],
+        "span.id": [
+            "dynamic"
+        ],
+        "timestamp.us": [
+            "dynamic"
+        ],
+        "trace.id": [
+            "dynamic"
+        ],
+        "transaction.duration.us": [
+            30000
+        ],
+        "transaction.id": [
+            "dynamic"
+        ],
+        "transaction.name": [
+            "huge-traces"
+        ],
+        "transaction.name.text": [
+            "huge-traces"
+        ],
+        "transaction.representative_count": [
+            1
+        ],
+        "transaction.sampled": [
+            true
+        ],
+        "transaction.span_count.dropped": [
+            54
+        ],
+        "transaction.span_count.started": [
+            0
+        ],
+        "transaction.type": [
+            "type"
+        ]
+    }
+]

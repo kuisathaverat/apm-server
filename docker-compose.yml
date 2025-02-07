@@ -1,24 +1,78 @@
-version: '2.1'
+#
+# This configuration is used for systemtests
+# For manual testing, you should probably prefer using Tilt.
+# See https://github.com/elastic/apm-server/blob/main/dev_docs/TESTING.md#tilt--kubernetes
+#
+version: '3.9'
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1g"
 services:
-  beat:
-    build: ${PWD}/tests/.
-    depends_on:
-      - proxy_dep
-    env_file:
-      - ${PWD}/build/test.env
-    working_dir: /go/src/github.com/elastic/apm-server
+  elasticsearch:
+    # TODO: replace with a pinned version such as 9.0.0-aaaaaaaa-SNAPSHOT
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0-80928867-SNAPSHOT
+    ports:
+      - 9200:9200
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=500ms"]
+      retries: 300
+      interval: 1s
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "network.host=0.0.0.0"
+      - "transport.host=127.0.0.1"
+      - "http.host=0.0.0.0"
+      - "cluster.routing.allocation.disk.threshold_enabled=false"
+      - "discovery.type=single-node"
+      - "xpack.security.authc.anonymous.roles=remote_monitoring_collector"
+      - "xpack.security.authc.realms.file.file1.order=0"
+      - "xpack.security.authc.realms.native.native1.order=1"
+      - "xpack.security.enabled=true"
+      - "xpack.license.self_generated.type=trial"
+      - "xpack.security.authc.token.enabled=true"
+      - "xpack.security.authc.api_key.enabled=true"
+      - "logger.org.elasticsearch=${ES_LOG_LEVEL:-error}"
+      - "action.destructive_requires_name=false"
     volumes:
-      - ${PWD}:/go/src/github.com/elastic/apm-server/
-    command: make
+      - "./testing/docker/elasticsearch/roles.yml:/usr/share/elasticsearch/config/roles.yml"
+      - "./testing/docker/elasticsearch/users:/usr/share/elasticsearch/config/users"
+      - "./testing/docker/elasticsearch/users_roles:/usr/share/elasticsearch/config/users_roles"
+      - "./testing/docker/elasticsearch/ingest-geoip:/usr/share/elasticsearch/config/ingest-geoip"
+    logging: *default-logging
 
-  # This is a proxy used to block beats until all services are healthy.
-  # See: https://github.com/docker/compose/issues/4369
-  proxy_dep:
-    image: busybox
+  kibana:
+    # TODO: replace with a pinned version such as 9.0.0-aaaaaaaa-SNAPSHOT
+    image: docker.elastic.co/kibana/kibana:9.0.0-80928867-SNAPSHOT
+    ports:
+      - 5601:5601
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'All services are available'"]
+      retries: 300
+      interval: 1s
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      ELASTICSEARCH_USERNAME: "${KIBANA_ES_USER:-kibana_system_user}"
+      ELASTICSEARCH_PASSWORD: "${KIBANA_ES_PASS:-changeme}"
+      XPACK_FLEET_AGENTS_ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
     depends_on:
       elasticsearch: { condition: service_healthy }
+    volumes:
+      - "./testing/docker/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml"
+    logging: *default-logging
 
-  elasticsearch:
-    extends:
-      file: ./_beats/testing/environments/${TESTING_ENVIRONMENT}.yml
-      service: elasticsearch
+  metricbeat:
+    # TODO: replace with a pinned version such as 9.0.0-aaaaaaaa-SNAPSHOT
+    image: docker.elastic.co/beats/metricbeat:9.0.0-80928867-SNAPSHOT
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      ELASTICSEARCH_USERNAME: "${KIBANA_ES_USER:-admin}"
+      ELASTICSEARCH_PASSWORD: "${KIBANA_ES_PASS:-changeme}"
+    depends_on:
+      elasticsearch: { condition: service_healthy }
+    volumes:
+      - "./testing/docker/metricbeat/elasticsearch-xpack.yml://usr/share/metricbeat/modules.d/elasticsearch-xpack.yml"
+      - "./testing/docker/metricbeat/apm-server.yml://usr/share/metricbeat/modules.d/apm-server.yml"
+    profiles:
+      - monitoring
+    logging: *default-logging

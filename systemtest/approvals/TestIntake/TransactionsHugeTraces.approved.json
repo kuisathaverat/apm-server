@@ -1,0 +1,395 @@
+[
+    {
+        "@timestamp": [
+            "2017-05-30T18:53:27.154Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "client.geo.continent_name": [
+            "North America"
+        ],
+        "client.geo.country_iso_code": [
+            "US"
+        ],
+        "client.geo.country_name": [
+            "United States"
+        ],
+        "client.geo.location": [
+            "dynamic"
+        ],
+        "client.ip": [
+            "12.53.12.1"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            1
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "http.request.env.GATEWAY_INTERFACE": [
+            "CGI/1.1"
+        ],
+        "http.request.env.SERVER_SOFTWARE": [
+            "nginx"
+        ],
+        "http.request.headers": [
+            {
+                "Array": [
+                    "foo",
+                    "bar",
+                    "baz"
+                ],
+                "Content-Type": "text/html",
+                "Cookie": "c1=v1, c2=v2",
+                "Some-Other-Header": "foo",
+                "User-Agent": [
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+                    "Mozilla Chrome Edge"
+                ]
+            }
+        ],
+        "http.request.method": [
+            "POST"
+        ],
+        "http.request.referrer": [
+            "http://localhost:8000/test/e2e/"
+        ],
+        "http.response.decoded_body_size": [
+            2990
+        ],
+        "http.response.encoded_body_size": [
+            2690
+        ],
+        "http.response.finished": [
+            true
+        ],
+        "http.response.headers": [
+            {
+                "Content-Type": "application/json"
+            }
+        ],
+        "http.response.headers_sent": [
+            true
+        ],
+        "http.response.status_code": [
+            200
+        ],
+        "http.response.transfer_size": [
+            258
+        ],
+        "http.version": [
+            "1.1"
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.organization_uuid": [
+            "9f0e9d64-c185-4d21-a6f4-4673ed561ec8"
+        ],
+        "labels.tag1": [
+            "one"
+        ],
+        "labels.tag4": [
+            "false"
+        ],
+        "numeric_labels.tag2": [
+            12
+        ],
+        "numeric_labels.tag3": [
+            12.45
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "transaction"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "chatty-service"
+        ],
+        "service.name.text": [
+            "chatty-service"
+        ],
+        "service.node.name": [
+            "chatty-node"
+        ],
+        "service.node.name.text": [
+            "chatty-node"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "7.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "source.ip": [
+            "12.53.12.1"
+        ],
+        "span.id": [
+            "ddf109a4c4aa5f2b6e984548ca57774c"
+        ],
+        "timestamp.us": [
+            1496170407154000
+        ],
+        "trace.id": [
+            "646df3b8b5279e982cc12a2f1ac004f3"
+        ],
+        "transaction.duration.us": [
+            32592
+        ],
+        "transaction.id": [
+            "ddf109a4c4aa5f2b6e984548ca57774c"
+        ],
+        "transaction.name": [
+            "GET /api/types"
+        ],
+        "transaction.name.text": [
+            "GET /api/types"
+        ],
+        "transaction.representative_count": [
+            1
+        ],
+        "transaction.result": [
+            "success"
+        ],
+        "transaction.sampled": [
+            true
+        ],
+        "transaction.span_count.dropped": [
+            3
+        ],
+        "transaction.span_count.started": [
+            20
+        ],
+        "transaction.type": [
+            "request"
+        ],
+        "url.domain": [
+            "www.example.com"
+        ],
+        "url.fragment": [
+            "#hash"
+        ],
+        "url.full": [
+            "https://www.example.com/p/a/t/h?query=string#hash"
+        ],
+        "url.full.text": [
+            "https://www.example.com/p/a/t/h?query=string#hash"
+        ],
+        "url.original": [
+            "/p/a/t/h?query=string#hash"
+        ],
+        "url.original.text": [
+            "/p/a/t/h?query=string#hash"
+        ],
+        "url.path": [
+            "/p/a/t/h"
+        ],
+        "url.port": [
+            8080
+        ],
+        "url.query": [
+            "?query=string"
+        ],
+        "url.scheme": [
+            "https"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.id": [
+            "99"
+        ],
+        "user.name": [
+            "foo"
+        ],
+        "user.name.text": [
+            "foo"
+        ],
+        "user_agent.device.name": [
+            "Mac"
+        ],
+        "user_agent.device.name.text": [
+            "Mac"
+        ],
+        "user_agent.name": [
+            "Chrome"
+        ],
+        "user_agent.name.text": [
+            "Chrome"
+        ],
+        "user_agent.original": [
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36, Mozilla Chrome Edge"
+        ],
+        "user_agent.original.text": [
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36, Mozilla Chrome Edge"
+        ],
+        "user_agent.os.full": [
+            "Mac OS X 10.10.5"
+        ],
+        "user_agent.os.full.text": [
+            "Mac OS X 10.10.5"
+        ],
+        "user_agent.os.name": [
+            "Mac OS X"
+        ],
+        "user_agent.os.name.text": [
+            "Mac OS X"
+        ],
+        "user_agent.os.version": [
+            "10.10.5"
+        ],
+        "user_agent.version": [
+            "51.0.2704.103"
+        ]
+    }
+]

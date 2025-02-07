@@ -1,0 +1,77 @@
+[
+    {
+        "@timestamp": [
+            "dynamic"
+        ],
+        "agent.name": [
+            "opentelemetry/go"
+        ],
+        "agent.name.text": [
+            "opentelemetry/go"
+        ],
+        "agent.version": [
+            "dynamic"
+        ],
+        "data_stream.dataset": [
+            "apm.app.unknown_service_systemtest_test"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "histogram": [
+            {
+                "counts": [
+                    1,
+                    1,
+                    1,
+                    1
+                ],
+                "values": [
+                    0.5,
+                    550,
+                    5500,
+                    10000
+                ]
+            }
+        ],
+        "metricset.name": [
+            "app"
+        ],
+        "metricset.name.text": [
+            "app"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.framework.name": [
+            "test-meter"
+        ],
+        "service.framework.name.text": [
+            "test-meter"
+        ],
+        "service.language.name": [
+            "go"
+        ],
+        "service.language.name.text": [
+            "go"
+        ],
+        "service.name": [
+            "unknown_service_systemtest_test"
+        ],
+        "service.name.text": [
+            "unknown_service_systemtest_test"
+        ]
+    }
+]

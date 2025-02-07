@@ -1,0 +1,2693 @@
+[
+    {
+        "@timestamp": [
+            "2018-07-30T18:53:42.281Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.ephemeral_id": [
+            "justanid"
+        ],
+        "agent.name": [
+            "elastic-ruby"
+        ],
+        "agent.name.text": [
+            "elastic-ruby"
+        ],
+        "agent.version": [
+            "2.2"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "destination.address": [
+            "0:0::0:1"
+        ],
+        "destination.ip": [
+            "::1"
+        ],
+        "destination.port": [
+            5432
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            1
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "http.request.method": [
+            "GET"
+        ],
+        "http.response.decoded_body_size": [
+            401
+        ],
+        "http.response.encoded_body_size": [
+            356
+        ],
+        "http.response.status_code": [
+            200
+        ],
+        "http.response.transfer_size": [
+            30012
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "abcdef0123456789"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "service1"
+        ],
+        "service.name.text": [
+            "service1"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.target.name": [
+            "testdb"
+        ],
+        "service.target.name.text": [
+            "testdb"
+        ],
+        "service.target.type": [
+            "postgres"
+        ],
+        "span.action": [
+            "query"
+        ],
+        "span.db.instance": [
+            "customers"
+        ],
+        "span.db.link": [
+            "other.db.com"
+        ],
+        "span.db.rows_affected": [
+            2
+        ],
+        "span.db.statement": [
+            "SELECT * FROM product_types WHERE user_id=?"
+        ],
+        "span.db.type": [
+            "sql"
+        ],
+        "span.db.user.name": [
+            "readonly_user"
+        ],
+        "span.db.user.name.text": [
+            "readonly_user"
+        ],
+        "span.destination.service.name": [
+            "postgresql"
+        ],
+        "span.destination.service.name.text": [
+            "postgresql"
+        ],
+        "span.destination.service.resource": [
+            "postgres/testdb"
+        ],
+        "span.destination.service.type": [
+            "db"
+        ],
+        "span.duration.us": [
+            3781
+        ],
+        "span.id": [
+            "1234567890aaaade"
+        ],
+        "span.name": [
+            "SELECT FROM product_types"
+        ],
+        "span.name.text": [
+            "SELECT FROM product_types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "postgresql"
+        ],
+        "span.sync": [
+            true
+        ],
+        "span.type": [
+            "db"
+        ],
+        "timestamp.us": [
+            1532976822281000
+        ],
+        "trace.id": [
+            "abcdef0123456789abcdef9876543210"
+        ],
+        "url.original": [
+            "http://localhost:8000"
+        ],
+        "url.original.text": [
+            "http://localhost:8000"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2018-07-30T18:53:42.281Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "ababcdcdefefabde"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "backendspans"
+        ],
+        "service.name.text": [
+            "backendspans"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "span.action": [
+            "call"
+        ],
+        "span.duration.us": [
+            13980
+        ],
+        "span.id": [
+            "abcde56a89012345"
+        ],
+        "span.name": [
+            "get /api/types"
+        ],
+        "span.name.text": [
+            "get /api/types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "http"
+        ],
+        "span.sync": [
+            false
+        ],
+        "span.type": [
+            "request"
+        ],
+        "timestamp.us": [
+            1532976822281000
+        ],
+        "trace.id": [
+            "abcdef0123456789abcdef9876543210"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2018-07-30T18:53:42.281Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "value1"
+        ],
+        "labels.tag4": [
+            "true"
+        ],
+        "numeric_labels.tag2": [
+            123
+        ],
+        "numeric_labels.tag3": [
+            12.34
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "abcdefabcdef7890"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "backendspans"
+        ],
+        "service.name.text": [
+            "backendspans"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "span.duration.us": [
+            3564
+        ],
+        "span.id": [
+            "0123456a89012345"
+        ],
+        "span.name": [
+            "GET /api/types"
+        ],
+        "span.name.text": [
+            "GET /api/types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "http"
+        ],
+        "span.type": [
+            "request"
+        ],
+        "timestamp.us": [
+            1532976822281000
+        ],
+        "trace.id": [
+            "abcdef0123456789abcdef9876543210"
+        ],
+        "transaction.id": [
+            "ab23456a89012345"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2018-07-30T18:53:42.281Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "0000000011111111"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "prod"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "backendspans"
+        ],
+        "service.name.text": [
+            "backendspans"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "span.duration.us": [
+            32592
+        ],
+        "span.id": [
+            "1234abcdef567895"
+        ],
+        "span.name": [
+            "GET /api/types"
+        ],
+        "span.name.text": [
+            "GET /api/types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.type": [
+            "request"
+        ],
+        "timestamp.us": [
+            1532976822281000
+        ],
+        "trace.id": [
+            "abcdef0123456789abcdef9876543210"
+        ],
+        "transaction.id": [
+            "ab45781d265894fe"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2021-07-06T11:58:05.682Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            1
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "abcdef0123456789"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "backendspans"
+        ],
+        "service.name.text": [
+            "backendspans"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "span.action": [
+            "query"
+        ],
+        "span.composite.compression_strategy": [
+            "exact_match"
+        ],
+        "span.composite.count": [
+            10
+        ],
+        "span.composite.sum.us": [
+            359298
+        ],
+        "span.duration.us": [
+            378191
+        ],
+        "span.id": [
+            "abcdef01234567"
+        ],
+        "span.name": [
+            "SELECT FROM p_details"
+        ],
+        "span.name.text": [
+            "SELECT FROM p_details"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "postgresql"
+        ],
+        "span.type": [
+            "db"
+        ],
+        "timestamp.us": [
+            1625572685682272
+        ],
+        "trace.id": [
+            "edcbaf0123456789abcdef9876543210"
+        ],
+        "transaction.id": [
+            "01af25874dec69dd"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2018-07-30T18:53:42.281Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.ephemeral_id": [
+            "justanid"
+        ],
+        "agent.name": [
+            "elastic-ruby"
+        ],
+        "agent.name.text": [
+            "elastic-ruby"
+        ],
+        "agent.version": [
+            "2.2"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "destination.address": [
+            "0:0::0:1"
+        ],
+        "destination.ip": [
+            "::1"
+        ],
+        "destination.port": [
+            5432
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            1
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "http.request.method": [
+            "GET"
+        ],
+        "http.response.decoded_body_size": [
+            401
+        ],
+        "http.response.encoded_body_size": [
+            356
+        ],
+        "http.response.status_code": [
+            200
+        ],
+        "http.response.transfer_size": [
+            30012
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "abcdef0123456789"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "service1"
+        ],
+        "service.name.text": [
+            "service1"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.target.name": [
+            "testdb"
+        ],
+        "service.target.name.text": [
+            "testdb"
+        ],
+        "service.target.type": [
+            "postgres"
+        ],
+        "span.action": [
+            "query"
+        ],
+        "span.db.instance": [
+            "customers"
+        ],
+        "span.db.link": [
+            "other.db.com"
+        ],
+        "span.db.rows_affected": [
+            2
+        ],
+        "span.db.statement": [
+            "SELECT * FROM product_types WHERE user_id=?"
+        ],
+        "span.db.type": [
+            "sql"
+        ],
+        "span.db.user.name": [
+            "readonly_user"
+        ],
+        "span.db.user.name.text": [
+            "readonly_user"
+        ],
+        "span.destination.service.name": [
+            "postgresql"
+        ],
+        "span.destination.service.name.text": [
+            "postgresql"
+        ],
+        "span.destination.service.resource": [
+            "postgresql"
+        ],
+        "span.destination.service.type": [
+            "db"
+        ],
+        "span.duration.us": [
+            3781
+        ],
+        "span.id": [
+            "fdc4567890aaaade"
+        ],
+        "span.name": [
+            "SELECT FROM product_types"
+        ],
+        "span.name.text": [
+            "SELECT FROM product_types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "postgresql"
+        ],
+        "span.sync": [
+            true
+        ],
+        "span.type": [
+            "db"
+        ],
+        "timestamp.us": [
+            1532976822281000
+        ],
+        "trace.id": [
+            "fdceas0123456789abcdef9876543210"
+        ],
+        "url.original": [
+            "http://localhost:8000"
+        ],
+        "url.original.text": [
+            "http://localhost:8000"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2018-07-30T18:53:42.281Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "destination.address": [
+            "0:0::0:1"
+        ],
+        "destination.ip": [
+            "::1"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "abcdef0123456789"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "backendspans"
+        ],
+        "service.name.text": [
+            "backendspans"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "span.action": [
+            "receive"
+        ],
+        "span.duration.us": [
+            141581
+        ],
+        "span.id": [
+            "00xxx12312312312"
+        ],
+        "span.message.age.ms": [
+            1577958057123
+        ],
+        "span.message.queue.name": [
+            "new_users"
+        ],
+        "span.message.queue.name.text": [
+            "new_users"
+        ],
+        "span.message.routing_key": [
+            "user-created-span"
+        ],
+        "span.name": [
+            "Rabbitmq receive"
+        ],
+        "span.name.text": [
+            "Rabbitmq receive"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "JMS"
+        ],
+        "span.type": [
+            "messaging"
+        ],
+        "timestamp.us": [
+            1532976822281000
+        ],
+        "trace.id": [
+            "fdedef0123456789abcdef9876543210"
+        ],
+        "transaction.id": [
+            "01af25874dec69dd"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2018-07-30T18:53:42.281Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "child.id": [
+            "51234abcdef56789"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            1
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "abcdef0123456789"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "backendspans"
+        ],
+        "service.name.text": [
+            "backendspans"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "span.action": [
+            "query.custom"
+        ],
+        "span.duration.us": [
+            141581
+        ],
+        "span.id": [
+            "abcdef01234567"
+        ],
+        "span.name": [
+            "GET /api/types"
+        ],
+        "span.name.text": [
+            "GET /api/types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "postgresql"
+        ],
+        "span.type": [
+            "db"
+        ],
+        "timestamp.us": [
+            1532976822281000
+        ],
+        "trace.id": [
+            "fdedef0123456789abcdef9876543210"
+        ],
+        "transaction.id": [
+            "01af25874dec69dd"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2018-07-30T18:33:03.584Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "agent.version": [
+            "3.14.0"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "destination.address": [
+            "0:0::0:1"
+        ],
+        "destination.ip": [
+            "::1"
+        ],
+        "destination.port": [
+            8080
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            1
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "abcdef0123456789"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "backendspans"
+        ],
+        "service.name.text": [
+            "backendspans"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.target.name": [
+            "localhost:8080"
+        ],
+        "service.target.name.text": [
+            "localhost:8080"
+        ],
+        "service.target.type": [
+            ""
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "span.action": [
+            "request"
+        ],
+        "span.destination.service.name": [
+            "external"
+        ],
+        "span.destination.service.name.text": [
+            "external"
+        ],
+        "span.destination.service.resource": [
+            "localhost:8080"
+        ],
+        "span.destination.service.type": [
+            "http"
+        ],
+        "span.duration.us": [
+            988
+        ],
+        "span.id": [
+            "ljf4567890aaaade"
+        ],
+        "span.name": [
+            "Request"
+        ],
+        "span.name.text": [
+            "Request"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "http"
+        ],
+        "span.type": [
+            "external"
+        ],
+        "timestamp.us": [
+            1532975583584217
+        ],
+        "trace.id": [
+            "ljfjev0123456789abcdef9876543210"
+        ],
+        "transaction.id": [
+            "01af25874dec69dd"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2018-07-30T18:53:42.281Z"
+        ],
+        "agent.activation_method": [
+            "some_activation_method"
+        ],
+        "agent.ephemeral_id": [
+            "justanid"
+        ],
+        "agent.name": [
+            "elastic-ruby"
+        ],
+        "agent.name.text": [
+            "elastic-ruby"
+        ],
+        "agent.version": [
+            "2.2"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.instance.id": [
+            "instance_id"
+        ],
+        "cloud.instance.name": [
+            "instance_name"
+        ],
+        "cloud.instance.name.text": [
+            "instance_name"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "traces"
+        ],
+        "destination.address": [
+            "0:0::0:1"
+        ],
+        "destination.ip": [
+            "::1"
+        ],
+        "destination.port": [
+            5432
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            1
+        ],
+        "host.architecture": [
+            "x64"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.ip": [
+            "127.0.0.1"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "http.request.id": [
+            "some-request-id"
+        ],
+        "http.request.method": [
+            "GET"
+        ],
+        "http.response.decoded_body_size": [
+            401
+        ],
+        "http.response.encoded_body_size": [
+            356
+        ],
+        "http.response.status_code": [
+            200
+        ],
+        "http.response.transfer_size": [
+            30012
+        ],
+        "kubernetes.namespace": [
+            "namespace1"
+        ],
+        "kubernetes.node.name": [
+            "node-name"
+        ],
+        "kubernetes.node.name.text": [
+            "node-name"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "kubernetes.pod.uid": [
+            "pod-uid"
+        ],
+        "labels.tag1": [
+            "label1"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "parent.id": [
+            "abcdef0123456789"
+        ],
+        "process.args": [
+            "node",
+            "server.js"
+        ],
+        "process.parent.pid": [
+            6789
+        ],
+        "process.pid": [
+            1234
+        ],
+        "process.title": [
+            "node"
+        ],
+        "process.title.text": [
+            "node"
+        ],
+        "processor.event": [
+            "span"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.framework.name": [
+            "Express"
+        ],
+        "service.framework.name.text": [
+            "Express"
+        ],
+        "service.framework.version": [
+            "1.2.3"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "service1"
+        ],
+        "service.name.text": [
+            "service1"
+        ],
+        "service.node.name": [
+            "container-id"
+        ],
+        "service.node.name.text": [
+            "container-id"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.target.type": [
+            "postgresql"
+        ],
+        "span.action": [
+            "query"
+        ],
+        "span.db.instance": [
+            "customers"
+        ],
+        "span.db.link": [
+            "other.db.com"
+        ],
+        "span.db.rows_affected": [
+            2
+        ],
+        "span.db.statement": [
+            "SELECT * FROM product_types WHERE user_id=?"
+        ],
+        "span.db.type": [
+            "sql"
+        ],
+        "span.db.user.name": [
+            "readonly_user"
+        ],
+        "span.db.user.name.text": [
+            "readonly_user"
+        ],
+        "span.destination.service.name": [
+            "postgresql"
+        ],
+        "span.destination.service.name.text": [
+            "postgresql"
+        ],
+        "span.destination.service.resource": [
+            "postgresql"
+        ],
+        "span.destination.service.type": [
+            "db"
+        ],
+        "span.duration.us": [
+            3781
+        ],
+        "span.id": [
+            "ute4567890aaaade"
+        ],
+        "span.name": [
+            "SELECT FROM product_types"
+        ],
+        "span.name.text": [
+            "SELECT FROM product_types"
+        ],
+        "span.representative_count": [
+            1
+        ],
+        "span.subtype": [
+            "postgresql"
+        ],
+        "span.sync": [
+            true
+        ],
+        "span.type": [
+            "db"
+        ],
+        "timestamp.us": [
+            1532976822281000
+        ],
+        "trace.id": [
+            "utedif0123456789abcdef9876543210"
+        ],
+        "url.original": [
+            "http://localhost:8000"
+        ],
+        "url.original.text": [
+            "http://localhost:8000"
+        ],
+        "user.domain": [
+            "ldap://abc"
+        ],
+        "user.email": [
+            "s@test.com"
+        ],
+        "user.id": [
+            "123"
+        ],
+        "user.name": [
+            "john"
+        ],
+        "user.name.text": [
+            "john"
+        ]
+    }
+]

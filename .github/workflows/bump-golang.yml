@@ -1,0 +1,93 @@
+---
+name: bump-golang
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * 6'
+
+permissions:
+  contents: read
+
+jobs:
+
+  labels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      backports: ${{ steps.labels.outputs.backports }}
+    steps:
+      - id: generate
+        name: Generate matrix
+        uses: elastic/oblt-actions/elastic/active-branches@v1
+        with:
+          exclude-branches: '7.17,main'
+      - uses: actions/github-script@v7
+        id: labels
+        env:
+          BRANCHES: ${{ steps.generate.outputs.branches }}
+        with:
+          script: |
+            // We only support the latest minor version
+            const branches = JSON.parse(process.env.BRANCHES)
+                          .sort((a, b) => parseFloat(b) - parseFloat(a));
+            const latest = branches[0]
+            core.setOutput("backports", `backport-${branches[0].trim()}`)
+
+  bump:
+    runs-on: ubuntu-latest
+    needs: [labels]
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Get token
+        id: get_token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+        with:
+          app_id: ${{ secrets.OBS_AUTOMATION_APP_ID }}
+          private_key: ${{ secrets.OBS_AUTOMATION_APP_PEM }}
+          permissions: >-
+            {
+              "contents": "write",
+              "pull_requests": "write"
+            }
+
+      - uses: elastic/oblt-actions/updatecli/run@v1
+        with:
+          command: --experimental apply --config .ci/updatecli/bump-golang.yml --values .ci/updatecli/values.d/scm.yml
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+          GITHUB_BRANCH: 'main'
+          GITHUB_LABELS: ${{ needs.labels.outputs.backports }}
+
+  bump-7:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '7.17'
+
+      - uses: elastic/oblt-actions/updatecli/run@v1
+        with:
+          command: --experimental apply --config .ci/updatecli/bump-golang.yml --values .ci/updatecli/values.d/scm.yml
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+          GITHUB_BRANCH: '7.17'
+          GITHUB_LABELS: 'backport-skip'
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [bump, bump-7]
+    if: always()
+    steps:
+      - id: check
+        uses: elastic/oblt-actions/check-dependent-jobs@v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+      - if: ${{ steps.check.outputs.isSuccess == 'false' }}
+        uses: elastic/oblt-actions/slack/send@v1
+        with:
+          bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          channel-id: "#apm-server"
+          message: ":traffic_cone: updatecli failed for `${{ github.repository }}@${{ github.ref_name }}`, @robots-ci please look what's going on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|here>"

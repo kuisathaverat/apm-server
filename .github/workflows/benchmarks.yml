@@ -1,0 +1,337 @@
+name: benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      runStandalone:
+        description: 'Run the benchmarks against standalone APM Server with Moxy'
+        required: false
+        type: boolean
+        default: false
+      enableTailSampling:
+        description: 'Enable tail-based sampling on the APM server'
+        required: false
+        type: boolean
+        default: false
+      tailSamplingStorageLimit:
+        description: 'Storage size limit of tail-based sampling on the APM server, defaults to 10GB'
+        required: false
+        type: string
+        default: "10GB"
+      profile:
+        description: 'The system profile used to run the benchmarks'
+        required: false
+        type: string
+      runOnStable:
+        description: 'Run the benchmarks on the latest stable version'
+        required: false
+        type: boolean
+        default: false
+      benchmarkAgents:
+        description: 'Set the number of agents to send data to the APM Server'
+        required: false
+        type: string
+      benchmarkRun:
+        description: 'Set the expression that matches the benchmark scenarios to run'
+        required: false
+        type: string
+      pgoExport:
+        description: 'Run the benchmarks with PGO export'
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 17 * * *' # Scheduled regular benchmarks.
+    - cron: '0 0 1 * *' # Scheduled PGO benchmarks.
+
+env:
+  PNG_REPORT_FILE: out.png
+  BENCHMARK_CPU_OUT: default.pgo
+  BENCHMARK_RESULT: benchmark-result.txt
+  WORKING_DIRECTORY: testing/benchmark
+
+permissions:
+  contents: read
+
+jobs:
+  benchmarks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      SSH_KEY: ./id_rsa_terraform
+      TF_VAR_private_key: ./id_rsa_terraform
+      TF_VAR_public_key: ./id_rsa_terraform.pub
+      TF_VAR_run_standalone: ${{ inputs.runStandalone || github.event.schedule=='0 0 1 * *' }}
+      TF_VAR_apm_server_tail_sampling: ${{ inputs.enableTailSampling || 'false' }} # set the default again otherwise schedules won't work
+      TF_VAR_apm_server_tail_sampling_storage_limit: ${{ inputs.tailSamplingStorageLimit || '10GB' }} # set the default again otherwise schedules won't work
+      RUN_STANDALONE: ${{ inputs.runStandalone || github.event.schedule=='0 0 1 * *' }}
+      PGO_EXPORT: ${{ inputs.pgoExport || github.event.schedule=='0 0 1 * *' }}
+      TFVARS_SOURCE: ${{ inputs.profile || 'system-profiles/8GBx1zone.tfvars' }} # // Default to use an 8gb profile
+      TF_VAR_BUILD_ID: ${{ github.run_id }}
+      TF_VAR_ENVIRONMENT: ci
+      TF_VAR_REPO: ${{ github.repository }}
+      GOBENCH_TAGS: branch=${{ github.head_ref || github.ref }},commit=${{ github.sha }},target_branch=${{ github.base_ref }},enable_tail_sampling=${{ inputs.enableTailSampling }}
+      GOBENCH_PASSWORD: ${{ secrets.GOBENCH_PASSWORD }}
+      GOBENCH_USERNAME: ${{ secrets.GOBENCH_USERNAME }}
+      GOBENCH_HOST: ${{ secrets.GOBENCH_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - uses: rlespinasse/github-slug-action@aba9f8db6ef36e0733227a62673d6592b1f430ea
+
+      - name: Set up env
+        run: |
+          SLUGGED_BRANCH_NAME=${{ env.GITHUB_HEAD_REF_SLUG || env.GITHUB_REF_SLUG }}
+          CREATED_AT=$(date +%s)
+          echo "TF_VAR_BRANCH=${SLUGGED_BRANCH_NAME}" >> "$GITHUB_ENV"
+          echo "TF_VAR_CREATED_AT=${CREATED_AT}" >> "$GITHUB_ENV"
+          echo "USER=benchci-$SLUGGED_BRANCH_NAME-$CREATED_AT" >> "$GITHUB_ENV"
+
+          if [ ! -z "${{ inputs.benchmarkAgents }}" ]; then
+            echo "BENCHMARK_AGENTS=${{ inputs.benchmarkAgents }}" >> "$GITHUB_ENV"
+          fi
+          if [ ! -z "${{ inputs.benchmarkRun }}" ]; then
+            echo "BENCHMARK_RUN=${{ inputs.benchmarkRun }}" >> "$GITHUB_ENV"
+          fi
+
+      # exclude BenchmarkTraces* from scheduled benchmarks
+      - if: github.event_name == 'schedule'
+        run: |
+          echo "BENCHMARK_RUN=Benchmark[^T]" >> "$GITHUB_ENV"
+
+      - name: Log in to the Elastic Container registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ secrets.ELASTIC_DOCKER_REGISTRY }}
+          username: ${{ secrets.ELASTIC_DOCKER_USERNAME }}
+          password: ${{ secrets.ELASTIC_DOCKER_PASSWORD }}
+
+      - uses: elastic/oblt-actions/google/auth@v1
+
+      - uses: elastic/oblt-actions/aws/auth@v1
+        with:
+          role-duration-seconds: 21600 # 6 hours
+
+      - uses: google-github-actions/get-secretmanager-secrets@a8440875e1c2892062aef9061228d4f1af8f919b # v2.2.3
+        with:
+          export_to_environment: true
+          secrets: |-
+            EC_API_KEY:elastic-observability/elastic-cloud-observability-team-pro-api-key
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.10.0
+          terraform_wrapper: false
+
+      - name: Init terraform module
+        id: init
+        run: make init
+
+      - name: Build apmbench
+        run: make apmbench $SSH_KEY terraform.tfvars
+
+      - name: Build APM Server and Moxy
+        if: ${{ env.RUN_STANDALONE == 'true' }}
+        run: |
+          make apm-server
+          make moxy
+
+      - name: Override docker committed version
+        if: ${{ ! inputs.runOnStable && env.RUN_STANDALONE == 'false' }}
+        run: make docker-override-committed-version
+
+      - name: Spin up benchmark environment
+        id: deploy
+        run: |
+          make apply
+          admin_console_url=$(terraform output -raw admin_console_url)
+          echo "admin_console_url=$admin_console_url" >> "$GITHUB_OUTPUT"
+          echo "-> infra setup done"
+      - name: Run benchmarks autotuned
+        if: ${{ inputs.benchmarkAgents == '' }}
+        run: make run-benchmark-autotuned
+
+      - name: Run benchmarks self tuned
+        if: ${{ inputs.benchmarkAgents != '' }}
+        run: make run-benchmark
+
+      - name: Cat standalone server logs
+        if: ${{ env.RUN_STANDALONE == 'true' && failure() }}
+        run: make cat-apm-server-logs
+
+      - name: Index benchmarks result
+        run: make index-benchmark-results
+
+      - name: Download PNG
+        run: >-
+          ${{ github.workspace }}/.ci/scripts/download-png-from-kibana.sh
+          ${{ secrets.KIBANA_BENCH_ENDPOINT }}
+          ${{ secrets.KIBANA_BENCH_USERNAME }}
+          ${{ secrets.KIBANA_BENCH_PASSWORD }}
+          $PNG_REPORT_FILE
+
+      - name: Upload PNG
+        uses: actions/upload-artifact@v4
+        with:
+          name: kibana-png-report
+          path: ${{ env.WORKING_DIRECTORY }}/${{ env.PNG_REPORT_FILE }}
+          if-no-files-found: error
+
+      - name: Upload PNG to AWS S3
+        id: s3-upload-png
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          DEST_NAME="github-run-id-${{ github.run_id }}.png"
+          aws s3 --debug cp ${{ env.PNG_REPORT_FILE }} s3://elastic-apm-server-benchmark-reports/${DEST_NAME}
+          echo "png_report_url=https://elastic-apm-server-benchmark-reports.s3.amazonaws.com/${DEST_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload benchmark result
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-result
+          path: ${{ env.WORKING_DIRECTORY }}/${{ env.BENCHMARK_RESULT }}
+          if-no-files-found: error
+
+      # The next section injects CPU profile collected by apmbench into the build.
+      # By copying the profile, uploading it to the artifacts and pushing it
+      # via a PR to update default.pgo.
+
+      - name: Copy CPU profile
+        run: make cp-cpuprof
+
+      - name: Upload CPU profile
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpu-profile
+          path: ${{ env.WORKING_DIRECTORY }}/${{ env.BENCHMARK_CPU_OUT }}
+          if-no-files-found: error
+
+      - name: Get token
+        id: get_token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+        with:
+          app_id: ${{ secrets.OBS_AUTOMATION_APP_ID }}
+          private_key: ${{ secrets.OBS_AUTOMATION_APP_PEM }}
+          permissions: >-
+            {
+              "contents": "write",
+              "pull_requests": "write"
+            }
+
+      # Required to use a service account, otherwise PRs created by
+      # GitHub bot won't trigger any CI builds.
+      # See https://github.com/peter-evans/create-pull-request/issues/48#issuecomment-537478081
+      - name: Configure git user
+        uses: elastic/oblt-actions/git/setup@v1
+        with:
+          github-token: ${{ steps.get_token.outputs.token }}
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e640591a934b1fd28eef1dcaf5e5  # v6.2.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: Open PGO PR
+        if: ${{ env.PGO_EXPORT == 'true' }}
+        run: ${{ github.workspace }}/.ci/scripts/push-pgo-pr.sh
+        env:
+          WORKSPACE_PATH: ${{ github.workspace }}
+          PROFILE_PATH: ${{ env.WORKING_DIRECTORY }}/${{ env.BENCHMARK_CPU_OUT }}
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+          WORKFLOW: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
+
+      # Secrets are rotated daily, if the benchmarks run between the rotation window, then
+      # there is a high chance things will stop working
+      # This is trying to reduce the chances of that happening.
+      # See https://github.com/elastic/observability-test-environments/actions/workflows/cluster-rotate-api-keys.yml
+      - uses: google-github-actions/get-secretmanager-secrets@a8440875e1c2892062aef9061228d4f1af8f919b # v2.2.3
+        if: always()
+        with:
+          export_to_environment: true
+          secrets: |-
+            EC_API_KEY:elastic-observability/elastic-cloud-observability-team-pro-api-key
+
+      - name: Tear down benchmark environment
+        if: always()
+        run: make init destroy
+
+      # Notify failure to Slack only on schedule (nightly run)
+      - if: failure() && github.event_name == 'schedule'
+        uses: elastic/oblt-actions/slack/notify-result@v1
+        with:
+          bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          channel-id: "#apm-server"
+          message: Nightly APM Server benchmarks failed! SDH Duty assignee, please have a look and follow this <https://github.com/elastic/observability-dev/blob/main/docs/apm/apm-server/runbooks/benchmarks.md|Runbook>!
+
+      # Notify result to Slack only on schedule (nightly run)
+      - if: github.event_name == 'schedule'
+        uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d # v2.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            {
+                "channel":  "#apm-server",
+                "text": "${{ github.event_name == 'schedule' && 'Nightly' || '' }} APM Server benchmarks succesfully executed!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "${{ github.event_name == 'schedule' && 'Nightly' || '' }} APM Server benchmarks succesfully executed!"
+                        },
+                        "accessory": {
+                            "type": "button",
+                            "style": "primary",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Workflow Run #${{ github.run_id }}",
+                                "emoji": true
+                            },
+                            "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                            "action_id": "workflow-run-button"
+                        }
+                    },
+                    {
+                        "type": "image",
+                        "image_url": "${{ steps.s3-upload-png.outputs.png_report_url }}",
+                        "alt_text": "kibana-png-report"
+                    },
+                    {
+                        "type": "actions",
+                        "elements": [
+                            {
+                                "type": "button",
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Benchmarks dashboard"
+                                },
+                                "url": "${{ secrets.KIBANA_BENCH_DASHBOARD }}",
+                                "action_id": "kibana-dashboard-button"
+                            },
+                            {
+                                "type": "button",
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Elastic Cloud deployment"
+                                },
+                                "url": "${{ steps.deploy.outputs.admin_console_url }}",
+                                "action_id": "admin-console-button"
+                            }
+                        ]
+                    }
+                ]
+            }

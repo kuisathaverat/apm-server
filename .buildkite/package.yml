@@ -1,0 +1,61 @@
+notify:
+  - slack: "#apm-server"
+    if: build.state == "failed"
+  - slack: "#observablt-bots"
+    if: "build.state != 'passed'"
+
+env:
+  IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2404"
+  IMAGE_UBUNTU_ARM_64: "core-ubuntu-2404-aarch64"
+  GENERATE_WOLFI_IMAGES: true
+
+steps:
+  - group: "Package"
+    key: "package"
+    steps:
+      - label: "Package x86_64"
+        key: "package-x86-64"
+        command: ".buildkite/scripts/package.sh {{matrix}}"
+        agents:
+          provider: "gcp"
+          image: "${IMAGE_UBUNTU_X86_64}"
+          machineType: "c2-standard-16"
+        matrix:
+          - "snapshot"
+          - "staging"
+        artifact_paths:
+          - "build/distributions/**/*"
+          - "build/dependencies*.csv"
+        retry:
+          automatic:
+            - limit: 1
+
+      - label: "Package aarch64"
+        key: "package-arm"
+        command: ".buildkite/scripts/package.sh {{matrix}}"
+        agents:
+          provider: "aws"
+          imagePrefix: "${IMAGE_UBUNTU_ARM_64}"
+          instanceType: "t4g.2xlarge"
+        matrix:
+          - "snapshot"
+          - "staging"
+        artifact_paths:
+          - "build/distributions/**/*"
+        retry:
+          automatic:
+            - limit: 1
+
+  - label: "DRA"
+    key: "dra"
+    command: ".buildkite/scripts/dra.sh {{matrix}}"
+    agents:
+      provider: "gcp"
+      image: "${IMAGE_UBUNTU_X86_64}"
+      machineType: "c2-standard-16"
+    matrix:
+      - "snapshot"
+      - "staging"
+    depends_on:
+      - step: "package"
+        allow_failure: false

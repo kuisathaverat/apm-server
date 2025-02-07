@@ -1,0 +1,1235 @@
+[
+    {
+        "@timestamp": [
+            "2006-01-02T15:00:00.000Z"
+        ],
+        "agent.name": [
+            "go"
+        ],
+        "agent.name.text": [
+            "go"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.10m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            {
+                "sum": 5,
+                "value_count": 5
+            }
+        ],
+        "host.hostname": [
+            "beowulf"
+        ],
+        "host.name": [
+            "beowulf"
+        ],
+        "host.name.text": [
+            "beowulf"
+        ],
+        "host.os.platform": [
+            "minix"
+        ],
+        "metricset.interval": [
+            "10m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.language.name": [
+            "go"
+        ],
+        "service.language.name.text": [
+            "go"
+        ],
+        "service.language.version": [
+            "2.0"
+        ],
+        "service.name": [
+            "systemtest"
+        ],
+        "service.name.text": [
+            "systemtest"
+        ],
+        "service.node.name": [
+            "beowulf"
+        ],
+        "service.node.name.text": [
+            "beowulf"
+        ],
+        "service.runtime.name": [
+            "gc"
+        ],
+        "service.runtime.name.text": [
+            "gc"
+        ],
+        "service.runtime.version": [
+            "2.0"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    5
+                ],
+                "values": [
+                    1003519
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 5017595,
+                "value_count": 5
+            }
+        ],
+        "transaction.name": [
+            "abc"
+        ],
+        "transaction.name.text": [
+            "abc"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "backend"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2006-01-02T15:04:00.000Z"
+        ],
+        "agent.name": [
+            "go"
+        ],
+        "agent.name.text": [
+            "go"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.1m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            {
+                "sum": 5,
+                "value_count": 5
+            }
+        ],
+        "host.hostname": [
+            "beowulf"
+        ],
+        "host.name": [
+            "beowulf"
+        ],
+        "host.name.text": [
+            "beowulf"
+        ],
+        "host.os.platform": [
+            "minix"
+        ],
+        "metricset.interval": [
+            "1m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.language.name": [
+            "go"
+        ],
+        "service.language.name.text": [
+            "go"
+        ],
+        "service.language.version": [
+            "2.0"
+        ],
+        "service.name": [
+            "systemtest"
+        ],
+        "service.name.text": [
+            "systemtest"
+        ],
+        "service.node.name": [
+            "beowulf"
+        ],
+        "service.node.name.text": [
+            "beowulf"
+        ],
+        "service.runtime.name": [
+            "gc"
+        ],
+        "service.runtime.name.text": [
+            "gc"
+        ],
+        "service.runtime.version": [
+            "2.0"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    5
+                ],
+                "values": [
+                    1003519
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 5017595,
+                "value_count": 5
+            }
+        ],
+        "transaction.name": [
+            "abc"
+        ],
+        "transaction.name.text": [
+            "abc"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "backend"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2006-01-02T15:00:00.000Z"
+        ],
+        "agent.name": [
+            "go"
+        ],
+        "agent.name.text": [
+            "go"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.60m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            {
+                "sum": 5,
+                "value_count": 5
+            }
+        ],
+        "host.hostname": [
+            "beowulf"
+        ],
+        "host.name": [
+            "beowulf"
+        ],
+        "host.name.text": [
+            "beowulf"
+        ],
+        "host.os.platform": [
+            "minix"
+        ],
+        "metricset.interval": [
+            "60m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.language.name": [
+            "go"
+        ],
+        "service.language.name.text": [
+            "go"
+        ],
+        "service.language.version": [
+            "2.0"
+        ],
+        "service.name": [
+            "systemtest"
+        ],
+        "service.name.text": [
+            "systemtest"
+        ],
+        "service.node.name": [
+            "beowulf"
+        ],
+        "service.node.name.text": [
+            "beowulf"
+        ],
+        "service.runtime.name": [
+            "gc"
+        ],
+        "service.runtime.name.text": [
+            "gc"
+        ],
+        "service.runtime.version": [
+            "2.0"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    5
+                ],
+                "values": [
+                    1003519
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 5017595,
+                "value_count": 5
+            }
+        ],
+        "transaction.name": [
+            "abc"
+        ],
+        "transaction.name.text": [
+            "abc"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "backend"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2006-01-02T15:00:00.000Z"
+        ],
+        "agent.name": [
+            "go"
+        ],
+        "agent.name.text": [
+            "go"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.10m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            {
+                "sum": 10,
+                "value_count": 10
+            }
+        ],
+        "host.hostname": [
+            "beowulf"
+        ],
+        "host.name": [
+            "beowulf"
+        ],
+        "host.name.text": [
+            "beowulf"
+        ],
+        "host.os.platform": [
+            "minix"
+        ],
+        "metricset.interval": [
+            "10m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.language.name": [
+            "go"
+        ],
+        "service.language.name.text": [
+            "go"
+        ],
+        "service.language.version": [
+            "2.0"
+        ],
+        "service.name": [
+            "systemtest"
+        ],
+        "service.name.text": [
+            "systemtest"
+        ],
+        "service.node.name": [
+            "beowulf"
+        ],
+        "service.node.name.text": [
+            "beowulf"
+        ],
+        "service.runtime.name": [
+            "gc"
+        ],
+        "service.runtime.name.text": [
+            "gc"
+        ],
+        "service.runtime.version": [
+            "2.0"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    10
+                ],
+                "values": [
+                    1003519
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 10035190,
+                "value_count": 10
+            }
+        ],
+        "transaction.name": [
+            "def"
+        ],
+        "transaction.name.text": [
+            "def"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "backend"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2006-01-02T15:04:00.000Z"
+        ],
+        "agent.name": [
+            "go"
+        ],
+        "agent.name.text": [
+            "go"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.1m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            {
+                "sum": 10,
+                "value_count": 10
+            }
+        ],
+        "host.hostname": [
+            "beowulf"
+        ],
+        "host.name": [
+            "beowulf"
+        ],
+        "host.name.text": [
+            "beowulf"
+        ],
+        "host.os.platform": [
+            "minix"
+        ],
+        "metricset.interval": [
+            "1m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.language.name": [
+            "go"
+        ],
+        "service.language.name.text": [
+            "go"
+        ],
+        "service.language.version": [
+            "2.0"
+        ],
+        "service.name": [
+            "systemtest"
+        ],
+        "service.name.text": [
+            "systemtest"
+        ],
+        "service.node.name": [
+            "beowulf"
+        ],
+        "service.node.name.text": [
+            "beowulf"
+        ],
+        "service.runtime.name": [
+            "gc"
+        ],
+        "service.runtime.name.text": [
+            "gc"
+        ],
+        "service.runtime.version": [
+            "2.0"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    10
+                ],
+                "values": [
+                    1003519
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 10035190,
+                "value_count": 10
+            }
+        ],
+        "transaction.name": [
+            "def"
+        ],
+        "transaction.name.text": [
+            "def"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "backend"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2006-01-02T15:00:00.000Z"
+        ],
+        "agent.name": [
+            "go"
+        ],
+        "agent.name.text": [
+            "go"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.60m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "success"
+        ],
+        "event.success_count": [
+            {
+                "sum": 10,
+                "value_count": 10
+            }
+        ],
+        "host.hostname": [
+            "beowulf"
+        ],
+        "host.name": [
+            "beowulf"
+        ],
+        "host.name.text": [
+            "beowulf"
+        ],
+        "host.os.platform": [
+            "minix"
+        ],
+        "metricset.interval": [
+            "60m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.language.name": [
+            "go"
+        ],
+        "service.language.name.text": [
+            "go"
+        ],
+        "service.language.version": [
+            "2.0"
+        ],
+        "service.name": [
+            "systemtest"
+        ],
+        "service.name.text": [
+            "systemtest"
+        ],
+        "service.node.name": [
+            "beowulf"
+        ],
+        "service.node.name.text": [
+            "beowulf"
+        ],
+        "service.runtime.name": [
+            "gc"
+        ],
+        "service.runtime.name.text": [
+            "gc"
+        ],
+        "service.runtime.version": [
+            "2.0"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    10
+                ],
+                "values": [
+                    1003519
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 10035190,
+                "value_count": 10
+            }
+        ],
+        "transaction.name": [
+            "def"
+        ],
+        "transaction.name.text": [
+            "def"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "backend"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2021-09-15T20:10:00.000Z"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.10m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "faas.coldstart": [
+            false
+        ],
+        "faas.trigger.type": [
+            "http"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "labels.tag1": [
+            "one"
+        ],
+        "metricset.interval": [
+            "10m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "numeric_labels.tag2": [
+            2
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "service.node.name": [
+            "node-123"
+        ],
+        "service.node.name.text": [
+            "node-123"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    2
+                ],
+                "values": [
+                    38911
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 77822,
+                "value_count": 2
+            }
+        ],
+        "transaction.name": [
+            "faas"
+        ],
+        "transaction.name.text": [
+            "faas"
+        ],
+        "transaction.result": [
+            "success"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "lambda"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2021-09-15T20:11:00.000Z"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.1m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "faas.coldstart": [
+            false
+        ],
+        "faas.trigger.type": [
+            "http"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "labels.tag1": [
+            "one"
+        ],
+        "metricset.interval": [
+            "1m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "numeric_labels.tag2": [
+            2
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "service.node.name": [
+            "node-123"
+        ],
+        "service.node.name.text": [
+            "node-123"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    2
+                ],
+                "values": [
+                    38911
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 77822,
+                "value_count": 2
+            }
+        ],
+        "transaction.name": [
+            "faas"
+        ],
+        "transaction.name.text": [
+            "faas"
+        ],
+        "transaction.result": [
+            "success"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "lambda"
+        ]
+    },
+    {
+        "@timestamp": [
+            "2021-09-15T20:00:00.000Z"
+        ],
+        "agent.name": [
+            "elastic-node"
+        ],
+        "agent.name.text": [
+            "elastic-node"
+        ],
+        "cloud.account.id": [
+            "account_id"
+        ],
+        "cloud.account.name": [
+            "account_name"
+        ],
+        "cloud.account.name.text": [
+            "account_name"
+        ],
+        "cloud.availability_zone": [
+            "cloud_availability_zone"
+        ],
+        "cloud.machine.type": [
+            "machine_type"
+        ],
+        "cloud.project.id": [
+            "project_id"
+        ],
+        "cloud.project.name": [
+            "project_name"
+        ],
+        "cloud.project.name.text": [
+            "project_name"
+        ],
+        "cloud.provider": [
+            "cloud_provider"
+        ],
+        "cloud.region": [
+            "cloud_region"
+        ],
+        "cloud.service.name": [
+            "lambda"
+        ],
+        "cloud.service.name.text": [
+            "lambda"
+        ],
+        "container.id": [
+            "container-id"
+        ],
+        "data_stream.dataset": [
+            "apm.transaction.60m"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "metrics"
+        ],
+        "event.outcome": [
+            "unknown"
+        ],
+        "faas.coldstart": [
+            false
+        ],
+        "faas.trigger.type": [
+            "http"
+        ],
+        "host.hostname": [
+            "node-name"
+        ],
+        "host.name": [
+            "node-name"
+        ],
+        "host.name.text": [
+            "node-name"
+        ],
+        "host.os.platform": [
+            "darwin"
+        ],
+        "kubernetes.pod.name": [
+            "pod-name"
+        ],
+        "kubernetes.pod.name.text": [
+            "pod-name"
+        ],
+        "labels.tag1": [
+            "one"
+        ],
+        "metricset.interval": [
+            "60m"
+        ],
+        "metricset.name": [
+            "transaction"
+        ],
+        "numeric_labels.tag2": [
+            2
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "processor.event": [
+            "metric"
+        ],
+        "service.environment": [
+            "staging"
+        ],
+        "service.language.name": [
+            "ecmascript"
+        ],
+        "service.language.name.text": [
+            "ecmascript"
+        ],
+        "service.language.version": [
+            "8"
+        ],
+        "service.name": [
+            "1234_service-12a3"
+        ],
+        "service.name.text": [
+            "1234_service-12a3"
+        ],
+        "service.node.name": [
+            "node-123"
+        ],
+        "service.node.name.text": [
+            "node-123"
+        ],
+        "service.runtime.name": [
+            "node"
+        ],
+        "service.runtime.name.text": [
+            "node"
+        ],
+        "service.runtime.version": [
+            "8.0.0"
+        ],
+        "service.version": [
+            "5.1.3"
+        ],
+        "transaction.duration.histogram": [
+            {
+                "counts": [
+                    2
+                ],
+                "values": [
+                    38911
+                ]
+            }
+        ],
+        "transaction.duration.summary": [
+            {
+                "sum": 77822,
+                "value_count": 2
+            }
+        ],
+        "transaction.name": [
+            "faas"
+        ],
+        "transaction.name.text": [
+            "faas"
+        ],
+        "transaction.result": [
+            "success"
+        ],
+        "transaction.root": [
+            true
+        ],
+        "transaction.type": [
+            "lambda"
+        ]
+    }
+]

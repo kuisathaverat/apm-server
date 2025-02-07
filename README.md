@@ -1,33 +1,41 @@
+[![ci](https://github.com/elastic/apm-server/actions/workflows/ci.yml/badge.svg)](https://github.com/elastic/apm-server/actions/workflows/ci.yml)
+[![Smoke Tests](https://github.com/elastic/apm-server/actions/workflows/smoke-tests-schedule.yml/badge.svg)](https://github.com/elastic/apm-server/actions/workflows/smoke-tests-schedule.yml)
+[![Package status](https://badge.buildkite.com/fc4aa824ffecf245db871971507275aa3c35904e380fef449c.svg?branch=main)](https://buildkite.com/elastic/apm-server-package)
+
 # APM Server
 
-The APM Server receives data from the Elastic APM agents and stores the data into Elasticsearch.
+The APM Server receives data from Elastic APM agents and transforms it into Elasticsearch documents.
+Read more about Elastic APM at [elastic.co/apm](https://www.elastic.co/apm).
 
-[Read more about Elastic APM](https://www.elastic.co/solutions/apm).
-
-Please take questions or feedback to the [Discuss forum](https://discuss.elastic.co/c/apm) for APM.
+For questions and feature requests, visit the [discussion forum](https://discuss.elastic.co/c/apm).
 
 ## Getting Started
 
-To get started with APM please see our [Getting Started Guide](https://www.elastic.co/guide/en/apm/get-started).
+To get started with APM, see our [Quick start guide](https://www.elastic.co/guide/en/apm/guide/current/apm-quick-start.html).
 
 ## APM Server Development
 
 ### Requirements
 
-* [Golang](https://golang.org/dl/) 1.10.3
+* [Go][golang-download]
+
+[golang-download]: https://golang.org/dl/
 
 ### Install
 
-+ Fork the repo with the Github interface and clone it:
+* Fork the repo with the GitHub interface and clone it:
 
 ```
-cd ${GOPATH}/src/github.com/elastic/
 git clone git@github.com:[USER]/apm-server.git
 ```
-Note that it should be cloned from the fork (replace [USER] with your Github user), not from origin.
 
-+ Add the upstream remote:
-```git remote add elastic git@github.com:elastic/apm-server.git```
+Note that it should be cloned from the fork (replace [USER] with your GitHub user), not from origin.
+
+* Add the upstream remote:
+
+```
+git remote add elastic git@github.com:elastic/apm-server.git
+```
 
 ### Build
 
@@ -38,12 +46,11 @@ in the same directory with the name apm-server.
 make
 ```
 
-You also need to create all files needed by the APM Server by running the additional command below. 
+If you make code changes, you may also need to update the project by running the additional command below:
 
 ```
 make update
 ```
-Note that this requires to have `virtualenv` installed.
 
 ### Run
 
@@ -53,27 +60,28 @@ To run APM Server with debugging output enabled, run:
 ./apm-server -c apm-server.yml -e -d "*"
 ```
 
+APM Server expects index templates, ILM policies, and ingest pipelines to be set up externally.
+This should be done by [installing the APM integration](https://www.elastic.co/guide/en/observability/current/traces-get-started.html#add-apm-integration).
+When running APM Server directly, it is only necessary to install the integration and not to run an Elastic Agent.
+
+#### Tilt
+
+You can also run APM Server in a containerized environment using
+[Tilt](https://tilt.dev/).
+
+```
+tilt up
+```
+
+See [dev docs
+testing](https://github.com/elastic/apm-server/blob/5f247b3f66b0fab04381eee5a53e676dba030937/dev_docs/TESTING.md#tilt--kubernetes)
+for additional information.
+
 ### Testing
 
-For Testing check out the [testing guide](TESTING.md)
-
-### Update
-
-Each beat has a template for the mapping in elasticsearch and a documentation for the fields
-which is automatically generated based on `fields.yml`.
-To generate required configuration files and templates run:
-
-```
-make index-template update
-```
+For Testing check out the [testing guide](dev_docs/TESTING.md)
 
 ### Cleanup
-
-To clean APM Server source code, run the following commands:
-
-```
-make fmt
-```
 
 To clean up the build directory and generated artifacts, run:
 
@@ -81,57 +89,78 @@ To clean up the build directory and generated artifacts, run:
 make clean
 ```
 
-For further development, check out the [beat developer guide](https://www.elastic.co/guide/en/beats/libbeat/current/new-beat.html).
-
 ### Contributing
 
-See [contributing](CONTRIBUTING.md) for details about reporting bugs or requesting features in APM server.
+See [contributing](CONTRIBUTING.md) for details about reporting bugs, requesting features,
+or contributing to APM Server.
 
-## Update Dependencies
+### Releases
 
-The `apm-server` has two types of dependencies, 
-the Golang packages managed with *Govendor* and a dependency to the *Beats Framework*.
+See [releases](dev_docs/RELEASES.md) for an APM Server release checklist.
 
-### Govendor
+## Updating dependencies
 
-Checkout the [govendor tool](https://github.com/kardianos/govendor).
+APM Server uses Go Modules for dependency management, without any vendoring.
 
-To update beats to the most recent version from your go path for example use: `govendor fetch github.com/elastic/beats/...`.
-Govendor will automatically pick the files needed.
+In general, you should use standard `go get` commands to add and update modules. The one exception to this
+is the dependency on `libbeat`, for which there exists a special Make target: `make update-beats`, described
+below.
 
-### Beats Framework Update
+### Updating libbeat
 
-To update the beats framework run `make update-beats`. This will fetch the most recent version of beats from master and copy
-the files which are needed for the framework part to the `_beats` directory. These are files like libbeat config files and
-scripts which are used for testing or packaging.
+By running `make update-beats` the `github.com/elastic/beats/vN` module will be updated to the most recent
+commit from the main branch, and a minimal set of files will be copied into the apm-server tree.
 
-It is recommended to keep the version of the beats framework and libbeat in sync.
-To make an update of both, run:
-
-```
-make update-beats
-```
-
-To update the dependency to a specific commit or branch run command as following:
+You can specify an alternative branch or commit by specifying the `BEATS_VERSION` variable, such as:
 
 ```
-BEATS_VERSION=f240148065af94d55c5149e444482b9635801f27 make update-beats
+make update-beats BEATS_VERSION=7.x
+make update-beats BEATS_VERSION=f240148065af94d55c5149e444482b9635801f27
 ```
+
+### Updating go-elasticsearch
+
+It is important to keep the [go-elasticsearch client](https://github.com/elastic/go-elasticsearch) in sync
+with the according major version. We also recommend to use the latest available client for minor versions.
+
+You can use `go get -u -m github.com/elastic/go-elasticsearch/v7@7.x` to update to the latest commit on the
+7.x branch.
 
 ## Packaging
 
-The beat frameworks provides tools to crosscompile and package your beat for different platforms. This requires [docker](https://www.docker.com/) and vendoring as described above. To build packages of your beat, run the following command:
+To build all apm-server packages from source, run:
 
 ```
 make package
 ```
 
 This will fetch and create all images required for the build process. The whole process can take several minutes.
+When complete, packages can be found in `build/distributions/`.
 
+### Building docker packages
+
+To customize image configuration, see [the docs](https://www.elastic.co/guide/en/apm/guide/current/running-on-docker.html).
+
+To build docker images from source, run:
+
+```
+make package-docker
+```
+
+When complete, Docker images can be found at `build/distributions/*.docker.tar.gz`,
+and the local Docker image IDs are written at `build/docker/*.txt`.
+
+Building pre-release images can be done by running `make package-docker-snapshot` instead.
 
 ## Documentation
-The [Documentation](https://www.elastic.co/guide/en/apm/server/current/index.html) for the APM Server can be found in the `docs` folder.
 
-## Help
+Documentation for the APM Server can be found in the [Observability guide's APM section](https://www.elastic.co/guide/en/observability/master/apm.html). Most documentation files live in the [elastic/observability-docs](https://github.com/elastic/observability-docs) repo's [`docs/en/observability/apm/` directory](https://github.com/elastic/observability-docs/tree/main/docs/en/observability/apm).
 
-`make help`
+However, the following content lives in this repo:
+
+* The **changelog** page listing all release notes is in [`CHANGELOG.asciidoc`](/CHANGELOG.asciidoc).
+* Each minor version's **release notes** are documented in individual files in the [`changelogs/`](/changelogs/) directory.
+* A list of all **breaking changes** are documented in [`changelogs/all-breaking-changes.asciidoc`](/changelogs/all-breaking-changes.asciidoc).
+* **Sample data sets** that are injected into the docs are in the [`docs/data/`](/docs/data/) directory.
+* **Specifications** that are injected into the docs are in the [`docs/spec/`](/docs/spec/) directory.
+

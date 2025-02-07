@@ -1,0 +1,29 @@
+apm-server:
+  host: 0.0.0.0:${apm_port}
+  auth:
+    api_key:
+      enabled: true
+    secret_token: ${apm_secret_token}
+  rum:
+    enabled: true
+  expvar:
+    enabled: true
+  pprof:
+    enabled: true
+  sampling:
+    tail:
+      enabled: ${apm_server_tail_sampling}
+      storage_limit: ${apm_server_tail_sampling_storage_limit}
+      policies:
+        - sample_rate: 0.1
+output:
+  elasticsearch:
+    hosts: [ ${elasticsearch_url} ]
+    username: ${elasticsearch_username}
+    password: ${elasticsearch_password}
+logging.level: debug
+logging.to_files: true
+logging.files:
+  path: /var/log/apm-server
+  name: apm-server
+  permissions: 0777

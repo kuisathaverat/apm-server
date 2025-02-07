@@ -1,0 +1,8 @@
+{
+    "accepted": 0,
+    "errors": [
+        {
+            "message": "cannot handle stream: cannot process batch: queue is full"
+        }
+    ]
+}

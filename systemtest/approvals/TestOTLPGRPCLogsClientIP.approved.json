@@ -1,0 +1,97 @@
+[
+    {
+        "@timestamp": [
+            "1970-01-01T00:00:01.000Z"
+        ],
+        "agent.name": [
+            "android/java"
+        ],
+        "agent.name.text": [
+            "android/java"
+        ],
+        "agent.version": [
+            "unknown"
+        ],
+        "client.geo.city_name": [
+            "dynamic"
+        ],
+        "client.geo.continent_name": [
+            "Europe"
+        ],
+        "client.geo.country_iso_code": [
+            "SE"
+        ],
+        "client.geo.country_name": [
+            "Sweden"
+        ],
+        "client.geo.location": [
+            "dynamic"
+        ],
+        "client.geo.region_iso_code": [
+            "dynamic"
+        ],
+        "client.geo.region_name": [
+            "dynamic"
+        ],
+        "client.ip": [
+            "89.160.20.128"
+        ],
+        "data_stream.dataset": [
+            "apm.app.unknown"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "data_stream.type": [
+            "logs"
+        ],
+        "event.severity": [
+            9
+        ],
+        "labels.key": [
+            "value"
+        ],
+        "log.level": [
+            "Info"
+        ],
+        "message": [
+            "a log message"
+        ],
+        "numeric_labels.numeric_key": [
+            1234
+        ],
+        "observer.hostname": [
+            "dynamic"
+        ],
+        "observer.type": [
+            "apm-server"
+        ],
+        "observer.version": [
+            "dynamic"
+        ],
+        "service.language.name": [
+            "java"
+        ],
+        "service.language.name.text": [
+            "java"
+        ],
+        "service.name": [
+            "unknown"
+        ],
+        "service.name.text": [
+            "unknown"
+        ],
+        "source.ip": [
+            "89.160.20.128"
+        ],
+        "source.nat.ip": [
+            "127.0.0.1"
+        ],
+        "span.id": [
+            "0200000000000000"
+        ],
+        "trace.id": [
+            "01000000000000000000000000000000"
+        ]
+    }
+]
